@@ -1,0 +1,6 @@
+{
+  "name": "Astrovision",
+  "description": "NakshatraAI - Culturally Aware AI Astrology Assistant, Kundli Milan, Horoscopes & custom consultations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

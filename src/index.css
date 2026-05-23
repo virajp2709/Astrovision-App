@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Libre Baskerville", "Georgia", serif;
+  --font-cinzel: "Libre Baskerville", "Georgia", serif;
+  --font-sans: "Inter", "Helvetica Neue", sans-serif;
+  --font-mono: "Fira Code", monospace;
+
+  --color-astro-blue: #4338ca;
+  --color-astro-gold: #b45309;
+
+  --color-editorial-bg: #fdfcf6;
+  --color-editorial-ink: #1a1a1a;
+  --color-editorial-accent: #b45309;
+  --color-editorial-spirit: #4338ca;
+}
+
+@layer base {
+  body {
+    font-family: "Inter", "Helvetica Neue", sans-serif;
+    background-color: #fdfcf6;
+    color: #1a1a1a;
+  }
+}
+
+/* Cosmic ambient styling - adapted to Editorial */
+.glass-effect {
+  background: #ffffff;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  box-shadow: 6px 6px 0px rgba(26,26,26,0.08);
+}
+
+.cosmic-gradient {
+  background: #4338ca;
+}
+
+.gold-gradient {
+  background: #b45309;
+}
+
+.editorial-card {
+  background: #ffffff;
+  border: 1px solid #1a1a1a;
+  padding: 32px;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 12px 12px 0px rgba(0,0,0,0.05);
+}
+
+.editorial-button {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #1a1a1a;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.2s ease;
+}
+
+.editorial-button:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
