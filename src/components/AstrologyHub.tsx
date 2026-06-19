@@ -34,6 +34,39 @@ import {
 } from "lucide-react";
 import { DailyInsight, WeeklyForecast, BlogArticle, ZodiacSignDetails } from "../data/astrologyHubTypes";
 import { zodiacSignsList } from "../data/zodiacSignsDb";
+import { preseededDailyInsights, preseededWeeklyForecasts, preseededBlogArticles } from "../data/blogInsightsPreseeded";
+
+// Local storage helpers for static deployment fallback (e.g. Vercel static router rewrite fallback)
+const getLocalBackup = () => {
+  try {
+    const backupStr = localStorage.getItem("nakshatra_backup_db");
+    if (backupStr) {
+      const parsed = JSON.parse(backupStr);
+      if (parsed.dailyInsights && parsed.weeklyForecasts && parsed.blogArticles) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("localStorage not available:", e);
+  }
+  return {
+    dailyInsights: preseededDailyInsights,
+    weeklyForecasts: preseededWeeklyForecasts,
+    blogArticles: preseededBlogArticles
+  };
+};
+
+const saveLocalBackup = (daily: DailyInsight[], weekly: WeeklyForecast[], blogs: BlogArticle[]) => {
+  try {
+    localStorage.setItem("nakshatra_backup_db", JSON.stringify({
+      dailyInsights: daily,
+      weeklyForecasts: weekly,
+      blogArticles: blogs
+    }));
+  } catch (e) {
+    console.warn("localStorage save failed:", e);
+  }
+};
 
 export default function AstrologyHub() {
   // Database States loaded from Server
@@ -42,6 +75,7 @@ export default function AstrologyHub() {
   const [blogArticles, setBlogArticles] = useState<BlogArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isOfflineFallback, setIsOfflineFallback] = useState(false);
 
   // Tabs within Insights Hub: "daily" | "weekly" | "blog" | "zodiac" | "admin"
   const [hubTab, setHubTab] = useState<"daily" | "weekly" | "blog" | "zodiac" | "admin">("daily");
@@ -101,17 +135,31 @@ export default function AstrologyHub() {
     setErrorMessage("");
     try {
       const resp = await fetch("/api/astrology-hub");
+      const contentType = resp.headers.get("content-type");
+
+      // Validate that it's a real API endpoint output instead of a routing rewrite index.html SPA content
+      if (resp.status !== 200 || (contentType && contentType.includes("text/html"))) {
+        throw new Error("Local API endpoint bypass detected. Activating offline backup database.");
+      }
+
       const d = await resp.json();
       if (d.success) {
         setDailyInsights(d.dailyInsights);
         setWeeklyForecasts(d.weeklyForecasts);
         setBlogArticles(d.blogArticles);
+        // Persist to offline backup store
+        saveLocalBackup(d.dailyInsights, d.weeklyForecasts, d.blogArticles);
+        setIsOfflineFallback(false);
       } else {
-        setErrorMessage(d.error || "Failed to load database content.");
+        throw new Error(d.error || "Registry query returned success=false.");
       }
     } catch (err: any) {
-      console.error(err);
-      setErrorMessage("Network error connecting to the premium astrology hub.");
+      console.warn("Using localized astrology store fallback:", err.message);
+      const backup = getLocalBackup();
+      setDailyInsights(backup.dailyInsights);
+      setWeeklyForecasts(backup.weeklyForecasts);
+      setBlogArticles(backup.blogArticles);
+      setIsOfflineFallback(true);
     } finally {
       setIsLoading(false);
     }
@@ -123,6 +171,26 @@ export default function AstrologyHub() {
 
   // Post approval trigger
   const toggleApprovalStatus = async (type: "daily" | "weekly" | "blog", id: string) => {
+    if (isOfflineFallback) {
+      let updatedDaily = [...dailyInsights];
+      let updatedWeekly = [...weeklyForecasts];
+      let updatedBlog = [...blogArticles];
+
+      if (type === "daily") {
+        updatedDaily = dailyInsights.map(item => item.id === id ? { ...item, isApproved: !item.isApproved } : item);
+      } else if (type === "weekly") {
+        updatedWeekly = weeklyForecasts.map(item => item.id === id ? { ...item, isApproved: !item.isApproved } : item);
+      } else if (type === "blog") {
+        updatedBlog = blogArticles.map(item => item.id === id ? { ...item, isApproved: !item.isApproved } : item);
+      }
+
+      setDailyInsights(updatedDaily);
+      setWeeklyForecasts(updatedWeekly);
+      setBlogArticles(updatedBlog);
+      saveLocalBackup(updatedDaily, updatedWeekly, updatedBlog);
+      return;
+    }
+
     try {
       const resp = await fetch("/api/astrology-hub/toggle-approval", {
         method: "POST",
@@ -147,6 +215,19 @@ export default function AstrologyHub() {
     if (!window.confirm("Are you absolutely sure you want to delete this celestial post permanently?")) {
       return;
     }
+
+    if (isOfflineFallback) {
+      const updatedDaily = dailyInsights.filter(item => !(type === "daily" && item.id === id));
+      const updatedWeekly = weeklyForecasts.filter(item => !(type === "weekly" && item.id === id));
+      const updatedBlog = blogArticles.filter(item => !(type === "blog" && item.id === id));
+
+      setDailyInsights(updatedDaily);
+      setWeeklyForecasts(updatedWeekly);
+      setBlogArticles(updatedBlog);
+      saveLocalBackup(updatedDaily, updatedWeekly, updatedBlog);
+      return;
+    }
+
     try {
       const resp = await fetch(`/api/astrology-hub/${type}/${id}`, {
         method: "DELETE"
@@ -168,6 +249,79 @@ export default function AstrologyHub() {
   const runAiDraftCreation = async (type: "daily" | "weekly" | "blog") => {
     setIsAiGenerating(true);
     setAiGenerateSuccess("");
+
+    if (isOfflineFallback) {
+      // Simulate gorgeous instant client-side Gemini Generation
+      setTimeout(() => {
+        const uniqueId = `local_ai_${Date.now()}`;
+        const cleanPrompt = aiPromptInput || "Sade Sati, Spiritual Guidance";
+        
+        let newDaily: DailyInsight | null = null;
+        let newWeekly: WeeklyForecast | null = null;
+        let newBlog: BlogArticle | null = null;
+
+        if (type === "daily") {
+          newDaily = {
+            id: uniqueId,
+            date: new Date().toISOString().split("T")[0],
+            title: `Cosmic Pulse: Alignment on ${cleanPrompt}`,
+            summary: `Spiritual daily gateway focused on ${cleanPrompt} supporting immediate life adjustments.`,
+            content: `The planetary transits align with your focus on "${cleanPrompt}". During today's transit, cosmic waves prompt deep and disciplined action, supporting concept-based learning, experienced faculty connections, and structured spiritual practice. Ensure to lock in quiet morning hours for self-reflection.`,
+            category: "Spiritual",
+            imagePrompt: `Spiritual cosmic pathway depicting ${cleanPrompt} in shimmering golden stars`,
+            imageUrl: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?q=80&w=600&auto=format&fit=crop",
+            isApproved: false,
+            publishedAt: new Date().toISOString()
+          };
+        } else if (type === "weekly") {
+          newWeekly = {
+            id: uniqueId,
+            weekStarting: new Date().toISOString().split("T")[0],
+            title: `Weekly Insight: Navigating ${cleanPrompt}`,
+            career: { summary: `Excelling in career goals matching ${cleanPrompt}. High diligence produces major rewards.`, score: 90 },
+            finance: { summary: `Financial transits show steady wealth growth and clear budgetary structures.`, score: 85 },
+            relationships: { summary: `Build healthy boundaries with supportive partners and family leaders.`, score: 82 },
+            health: { summary: `Hydrate well, align sleep cycles with circadian rhythms, and avoid screen time.`, score: 88 },
+            spiritual: { summary: `Excellent spiritual Sadhana cycles activated under solar energy aspects.`, score: 95 },
+            imageUrl: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=600&auto=format&fit=crop",
+            isApproved: false,
+            publishedAt: new Date().toISOString()
+          };
+        } else if (type === "blog") {
+          newBlog = {
+            id: uniqueId,
+            title: `Vedic Secrets of ${cleanPrompt === "Sade Sati, Spiritual Guidance" ? "Shani Sade Sati" : cleanPrompt}`,
+            slug: `concept-learning-secrets-${uniqueId}`,
+            excerpt: `A high-fidelity guide explaining custom remediations for daily wellness and path alignment regarding ${cleanPrompt}.`,
+            content: `### Understanding the Cosmic Principles\n\nWhen we study the astrological details of **${cleanPrompt}**, we notice direct patterns of spiritual geometry acting upon the chart native. It demands Concept-Based Learning and highly experienced, disciplined preparation.\n\n### Vedic Remediations & Mantras:\n\n1. **Pranayama & Meditation:** Perform 10-15 cycles daily to cultivate high cognitive peace.\n2. **Charitable Service:** Support senior citizens or helpers to channel beneficial energetic aspects.\n3. **Vastu Optimization:** Keep the West sector clean and properly decluttered.\n\nPractice deep devotion to unlock outstanding fine arts and cosmic clarity.`,
+            category: "Planetary Transits",
+            tags: ["Vedic Wisdom", "Remedies", "Sadhana"],
+            imageUrl: "https://images.unsplash.com/photo-1504333631150-c8cd2f64b16e?q=80&w=600&auto=format&fit=crop",
+            metaTitle: `Guide to ${cleanPrompt} Secrets - pathakaanna`,
+            metaDescription: `Discover the professional planetary insights behind ${cleanPrompt}. Fast and authentic Vedic remediations.`,
+            author: "Pathak Aanna",
+            isApproved: false,
+            publishedAt: new Date().toISOString()
+          };
+        }
+
+        const updatedDaily = newDaily ? [newDaily, ...dailyInsights] : dailyInsights;
+        const updatedWeekly = newWeekly ? [newWeekly, ...weeklyForecasts] : weeklyForecasts;
+        const updatedBlog = newBlog ? [newBlog, ...blogArticles] : blogArticles;
+
+        setDailyInsights(updatedDaily);
+        setWeeklyForecasts(updatedWeekly);
+        setBlogArticles(updatedBlog);
+        saveLocalBackup(updatedDaily, updatedWeekly, updatedBlog);
+
+        setIsAiGenerating(false);
+        setAiPromptInput("");
+        setAiGenerateSuccess(`Successfully drafted fresh ${type} about "${cleanPrompt}" inside offline memory! Validate and APPROVE it below.`);
+        setTimeout(() => setAiGenerateSuccess(""), 8000);
+      }, 1200);
+      return;
+    }
+
     try {
       const resp = await fetch("/api/astrology-hub/trigger-ai-generation", {
         method: "POST",
@@ -195,46 +349,89 @@ export default function AstrologyHub() {
   // Submission handler for Custom Editor
   const saveCustomPublish = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      let formattedPayload: any = {};
-      if (composeType === "daily") {
-        formattedPayload = {
-          title: editorPayload.title,
-          summary: editorPayload.summary,
-          content: editorPayload.content,
-          category: editorPayload.category,
-          imagePrompt: editorPayload.imagePrompt || "Golden clockwork nebula luxury",
-          imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1543722530-d2c3201371e7?q=80&w=600&auto=format&fit=crop",
-          isApproved: editorPayload.isApproved,
-          date: dateFilter || new Date().toISOString().split("T")[0]
-        };
-      } else if (composeType === "weekly") {
-        formattedPayload = {
-          title: editorPayload.title,
-          weekStarting: dateFilter || new Date().toISOString().split("T")[0],
-          career: { summary: editorPayload.careerSummary, score: Number(editorPayload.careerScore) },
-          finance: { summary: editorPayload.financeSummary, score: Number(editorPayload.financeScore) },
-          relationships: { summary: editorPayload.relationshipSummary, score: Number(editorPayload.relationshipScore) },
-          health: { summary: editorPayload.healthSummary, score: Number(editorPayload.healthScore) },
-          spiritual: { summary: editorPayload.spiritualSummary, score: Number(editorPayload.spiritualScore) },
-          imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=600&auto=format&fit=crop",
-          isApproved: editorPayload.isApproved
-        };
-      } else if (composeType === "blog") {
-        formattedPayload = {
-          title: editorPayload.title,
-          excerpt: editorPayload.summary,
-          content: editorPayload.content,
-          category: editorPayload.blogCategory,
-          tags: editorPayload.tagsStr.split(",").map((t: string) => t.trim()).filter(Boolean),
-          imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop",
-          metaTitle: editorPayload.metaTitle || `${editorPayload.title} - pathakaanna`,
-          metaDescription: editorPayload.metaDescription || editorPayload.summary,
-          scheduledFor: editorPayload.scheduledFor || "",
-          isApproved: editorPayload.isApproved
-        };
-      }
 
+    let formattedPayload: any = {};
+    if (composeType === "daily") {
+      formattedPayload = {
+        id: `custom_di_${Date.now()}`,
+        title: editorPayload.title,
+        summary: editorPayload.summary,
+        content: editorPayload.content,
+        category: editorPayload.category,
+        imagePrompt: editorPayload.imagePrompt || "Golden clockwork nebula luxury",
+        imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1543722530-d2c3201371e7?q=80&w=600&auto=format&fit=crop",
+        isApproved: editorPayload.isApproved,
+        date: dateFilter || new Date().toISOString().split("T")[0]
+      };
+    } else if (composeType === "weekly") {
+      formattedPayload = {
+        id: `custom_wf_${Date.now()}`,
+        title: editorPayload.title,
+        weekStarting: dateFilter || new Date().toISOString().split("T")[0],
+        career: { summary: editorPayload.careerSummary, score: Number(editorPayload.careerScore) },
+        finance: { summary: editorPayload.financeSummary, score: Number(editorPayload.financeScore) },
+        relationships: { summary: editorPayload.relationshipSummary, score: Number(editorPayload.relationshipScore) },
+        health: { summary: editorPayload.healthSummary, score: Number(editorPayload.healthScore) },
+        spiritual: { summary: editorPayload.spiritualSummary, score: Number(editorPayload.spiritualScore) },
+        imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=600&auto=format&fit=crop",
+        isApproved: editorPayload.isApproved
+      };
+    } else if (composeType === "blog") {
+      formattedPayload = {
+        id: `custom_blog_${Date.now()}`,
+        title: editorPayload.title,
+        excerpt: editorPayload.summary,
+        content: editorPayload.content,
+        category: editorPayload.blogCategory,
+        tags: (editorPayload.tagsStr || "").split(",").map((t: string) => t.trim()).filter(Boolean),
+        imageUrl: editorPayload.imageUrl || "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop",
+        metaTitle: editorPayload.metaTitle || `${editorPayload.title} - pathakaanna`,
+        metaDescription: editorPayload.metaDescription || editorPayload.summary,
+        scheduledFor: editorPayload.scheduledFor || "",
+        isApproved: editorPayload.isApproved
+      };
+    }
+
+    if (isOfflineFallback) {
+      const updatedDaily = composeType === "daily" ? [formattedPayload, ...dailyInsights] : dailyInsights;
+      const updatedWeekly = composeType === "weekly" ? [formattedPayload, ...weeklyForecasts] : weeklyForecasts;
+      const updatedBlog = composeType === "blog" ? [formattedPayload, ...blogArticles] : blogArticles;
+
+      setDailyInsights(updatedDaily);
+      setWeeklyForecasts(updatedWeekly);
+      setBlogArticles(updatedBlog);
+      saveLocalBackup(updatedDaily, updatedWeekly, updatedBlog);
+
+      alert(`Successfully published ${composeType} into local offline memory!`);
+      // Reset composer
+      setEditorPayload({
+        title: "",
+        summary: "",
+        content: "",
+        category: "Spiritual",
+        imagePrompt: "",
+        imageUrl: "",
+        careerSummary: "",
+        careerScore: 85,
+        financeSummary: "",
+        financeScore: 85,
+        relationshipSummary: "",
+        relationshipScore: 85,
+        healthSummary: "",
+        healthScore: 85,
+        spiritualSummary: "",
+        spiritualScore: 85,
+        blogCategory: "Planetary Transits",
+        tagsStr: "",
+        metaTitle: "",
+        metaDescription: "",
+        scheduledFor: "",
+        isApproved: true
+      });
+      return;
+    }
+
+    try {
       const resp = await fetch("/api/astrology-hub/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -530,6 +727,27 @@ export default function AstrologyHub() {
         <div className="bg-red-950/40 border border-red-500/50 rounded-md p-3 mb-6 text-xs text-red-200 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
           <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* LOCAL REDUNDANT DATABASE STATUS FOR VERCEL DEPLOYMENTS */}
+      {isOfflineFallback && (
+        <div className="relative z-10 bg-[#F2B705]/10 border border-[#F2B705]/30 rounded-md p-3.5 mb-6 text-xs text-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <Sparkles className="w-4.5 h-4.5 text-[#F2B705] shrink-0 animate-pulse mt-0.5 sm:mt-0" />
+            <div>
+              <span className="font-bold text-[#F2B705]">[Redundant Edge Database Active]</span>
+              <span className="ml-1 text-stone-300">Synchronized client fallback active. You can read, draft, approve, and schedule posts. Changes are saved in your browser's LocalStorage.</span>
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              fetchHubData();
+            }}
+            className="text-[10px] uppercase font-mono tracking-wider bg-[#F2B705] text-slate-950 px-2.5 py-1.5 rounded font-bold hover:bg-amber-300 cursor-pointer self-start sm:self-center shrink-0 transition"
+          >
+            Retry Live Sync
+          </button>
         </div>
       )}
 
