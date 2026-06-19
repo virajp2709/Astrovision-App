@@ -36,6 +36,10 @@ import { nakshatrasDataList, NakshatraDetails } from "./data/nakshatrasData";
 
 import AstroChat from "./components/AstroChat";
 import AstrologyHub from "./components/AstrologyHub";
+import AstroBookingFlow from "./components/AstroBookingFlow";
+import AstroFaq from "./components/AstroFaq";
+import AstroMantras from "./components/AstroMantras";
+import AstroPujas from "./components/AstroPujas";
 
 
 export function BraincordLogo() {
@@ -70,7 +74,7 @@ export function BraincordLogo() {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"nakshatras" | "horoscope" | "vastu" | "book" | "insights-hub">("insights-hub");
+  const [activeTab, setActiveTab] = useState<"nakshatras" | "horoscope" | "vastu" | "book" | "insights-hub" | "mantras" | "pujas">("insights-hub");
   const [nakshatraSearch, setNakshatraSearch] = useState("");
   const [selectedRulerFilter, setSelectedRulerFilter] = useState("All");
   const [selectedGanaFilter, setSelectedGanaFilter] = useState("All");
@@ -156,9 +160,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Kundli",
         scheduled_at: `${today} (Slot 1 (09:00 AM - 10:00 AM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -174,9 +178,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Marriage",
         scheduled_at: `${today} (Slot 3 (02:00 PM - 03:00 PM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -192,9 +196,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Career",
         scheduled_at: `${tomorrow} (Slot 1 (09:00 AM - 10:00 AM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -210,9 +214,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Finance",
         scheduled_at: `${tomorrow} (Slot 2 (11:00 AM - 12:00 PM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -228,9 +232,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Numerology",
         scheduled_at: `${tomorrow} (Slot 3 (02:00 PM - 03:00 PM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -246,9 +250,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Health",
         scheduled_at: `${tomorrow} (Slot 4 (04:30 PM - 05:30 PM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -264,9 +268,9 @@ export default function App() {
         astrologer_specialization: "Brain development, Signature, Numerology Expert",
         consultation_type: "Career",
         scheduled_at: `${tomorrow} (Slot 5 (07:00 PM - 08:00 PM))`,
-        duration_minutes: 60,
-        total_fee_inr: 2000,
-        advance_amount_inr: 600,
+        duration_minutes: 30,
+        total_fee_inr: 2100,
+        advance_amount_inr: 630,
         advance_percentage: 30,
         payment_deadline: `${today} 18:00`,
         payment_methods: ["UPI"],
@@ -472,9 +476,9 @@ export default function App() {
     // Fetch details of astrologer
     const astrologer = astrolgersData.find((a) => a.id === selectedAstroId) || astrolgersData[0];
     const bookingId = "ASTRO-" + Math.floor(100000 + Math.random() * 900000);
-    const totalFee = 2000; // Consultation fee set to 2000 INR
-    const advanceAmount = 600; // Advance payment set to 600 INR
-    const advancePercentage = 30; // 30% advance for 600 INR of 2000 INR
+    const totalFee = 2100; // Consultation fee set to 2100 INR
+    const advanceAmount = 630; // Advance payment set to 630 INR
+    const advancePercentage = 30; // 30% advance for 630 INR of 2100 INR
 
     const todayStr = new Date().toISOString().split("T")[0];
     const deadlineTime = "18:00";
@@ -489,7 +493,7 @@ export default function App() {
       astrologer_specialization: astrologer.specialization,
       consultation_type: consultationType,
       scheduled_at: `${preferredDate} (${preferredSlot})`,
-      duration_minutes: 60,
+      duration_minutes: 30,
       total_fee_inr: totalFee,
       advance_amount_inr: advanceAmount,
       advance_percentage: advancePercentage,
@@ -513,13 +517,13 @@ export default function App() {
 
   // Trigger from chat when pasted details are successfully parsed
   const handleBookingDetectedInChat = (booking: BookingDetails) => {
-    const updatedWith60MinFee = {
+    const updatedWith30MinFee = {
       ...booking,
-      duration_minutes: 60,
-      total_fee_inr: 2000,
-      advance_amount_inr: 600
+      duration_minutes: 30,
+      total_fee_inr: 2100,
+      advance_amount_inr: 630
     };
-    setActiveBooking(updatedWith60MinFee);
+    setActiveBooking(updatedWith30MinFee);
     
     let extractedSlot = "Slot 1 (09:00 AM - 10:00 AM)";
     const bracketMatch = booking.scheduled_at.match(/\(([^)]+)\)/);
@@ -763,17 +767,40 @@ export default function App() {
       </header>
 
       {/* Hero Header Introduction */}
-      <section className="bg-white border-b border-editorial-ink px-4 md:px-8 py-8 text-center relative overflow-hidden" style={{ background: "radial-gradient(circle at 50% 130%, rgba(67, 56, 202, 0.06) 0%, transparent 70%), #ffffff" }}>
+      <section className="bg-white border-b border-editorial-ink px-4 md:px-8 py-8 text-center relative overflow-hidden" style={{ background: "radial-gradient(circle at 50% 130%, rgba(67, 56, 202, 0.05) 0%, transparent 70%), #ffffff" }}>
         <div className="max-w-4xl mx-auto flex flex-col items-center relative z-10">
           <span className="bg-editorial-accent/10 border border-editorial-accent/30 text-editorial-accent px-4 py-1 rounded-sm text-[10px] font-bold tracking-widest uppercase mb-3 flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(180,83,9,0.15)]">
             <Zap className="w-3.5 h-3.5 fill-editorial-accent" /> 100% Certified Vedic Panchanga Aligned
           </span>
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-editorial-ink mb-3 leading-tight tracking-tight">
-            Consult the <span className="italic font-normal text-editorial-accent">Constellations</span> with NakshatraAI
+            Consult the <span className="italic font-normal text-[#0B3C5D]">Constellations</span> with NakshatraAI
           </h2>
-          <p className="text-xs md:text-sm text-slate-800 font-sans max-w-2xl leading-relaxed">
+          <p className="text-xs md:text-sm text-slate-500 font-sans max-w-2xl leading-relaxed mb-6">
             Where deep spiritual heritage converges with intuitive intelligence. Explore daily rashis, generate pristine geometry Kundli charts, check compatibility, and reserve sacred consultations.
           </p>
+
+          {/* Premium Pathak Anna Presentation Card on Homepage */}
+          <div className="bg-[#0B3C5D]/5 border-2 border-[#0B3C5D] p-5 rounded-md text-left max-w-3xl w-full shadow-[4px_4px_0px_#0B3C5D] relative overflow-hidden">
+            <div className="absolute right-0 bottom-0 translate-y-3 translate-x-3 opacity-10 pointer-events-none">
+              <span className="text-8xl">🔱</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 items-start relative z-10">
+              <span className="text-3xl hidden sm:block">⭐</span>
+              <div>
+                <p className="text-[13px] md:text-sm text-slate-800 leading-relaxed font-sans">
+                  <strong className="text-[#0B3C5D] font-bold text-base">Pathak Anna</strong> is a dedicated Vedic astrologer and life guidance consultant who helps individuals gain clarity about their future, finances, career, relationships, and personal growth. Through personalized horoscope analysis and practical guidance, he empowers people to make confident decisions and move forward with greater certainty and peace of mind.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="bg-[#F2B705] text-[#1a1a1a] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-sm border border-[#1a1a1a]">
+                    Vedic Astrologer
+                  </span>
+                  <span className="bg-[#0B3C5D] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-sm">
+                    Life Guidance Consultant
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -804,61 +831,83 @@ export default function App() {
         <section className="lg:col-span-7 w-full space-y-6">
           
           {/* NAVIGATION TAB BAR */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 bg-white p-2 rounded-md border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,0.1)]">
+          <div className="grid grid-cols-4 md:grid-cols-7 gap-1 bg-white p-2 rounded-md border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,0.1)]">
             <button
               id="tab-insights-hub"
               onClick={() => setActiveTab("insights-hub")}
-              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "insights-hub"
                   ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
                   : "bg-purple-950/10 text-purple-750 border-purple-500/20 hover:bg-purple-950/20"
               }`}
             >
-              🌌 Insights Hub
+              🌌 Insights
             </button>
             <button
               id="tab-nakshatras"
               onClick={() => setActiveTab("nakshatras")}
-              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "nakshatras"
                   ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
                   : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
               }`}
             >
-              🌌 Nakshatras
+              🌌 Stars
             </button>
             <button
               id="tab-vastu"
               onClick={() => setActiveTab("vastu")}
-              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "vastu"
                   ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
                   : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
               }`}
             >
-              🧭 Vastu & Gems
+              🧭 Vastu
             </button>
             <button
               id="tab-horoscope"
               onClick={() => setActiveTab("horoscope")}
-              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "horoscope"
                   ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
                   : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
               }`}
             >
-              🌟 Zodiac & Numbers
+              🌟 Zodiac
+            </button>
+            <button
+              id="tab-mantras"
+              onClick={() => setActiveTab("mantras")}
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "mantras"
+                  ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-amber-50 text-amber-950 border-amber-200 hover:bg-amber-100 shadow-[1px_1px_0px_rgba(26,26,26,0.3)]"
+              }`}
+            >
+              🕉️ Mantras
+            </button>
+            <button
+              id="tab-pujas"
+              onClick={() => setActiveTab("pujas")}
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "pujas"
+                  ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-blue-50 text-blue-950 border-blue-200 hover:bg-blue-100 shadow-[1px_1px_0px_rgba(26,26,26,0.3)]"
+              }`}
+            >
+              🔱 Pujas
             </button>
             <button
               id="tab-book"
               onClick={() => setActiveTab("book")}
-              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+              className={`py-2 px-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "book"
                   ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
                   : "bg-[#F2B705] text-[#1a1a1a] border-[#1a1a1a] hover:bg-[#dca204] shadow-[1px_1px_0px_rgba(26,26,26,0.5)]"
               }`}
             >
-              🗓️ Book Offline
+              🗓️ Booking
             </button>
           </div>
 
@@ -1410,6 +1459,27 @@ export default function App() {
           {/* TAB 4: CERTIFIED SCHEDULER */}
           {activeTab === "book" && (
             <div className="space-y-6 text-left">
+              <AstroBookingFlow />
+            </div>
+          )}
+
+          {/* TAB 5: SACRED MANTRAS PORTAL */}
+          {activeTab === "mantras" && (
+            <div className="space-y-6 text-left animate-fade-in">
+              <AstroMantras />
+            </div>
+          )}
+
+          {/* TAB 6: VEDIC PUJAS AND DOSH SHANTI SANCTUARY */}
+          {activeTab === "pujas" && (
+            <div className="space-y-6 text-left animate-fade-in">
+              <AstroPujas />
+            </div>
+          )}
+
+          {/* TEMPORARY DISMISSED OLD BILLING SYSTEM */}
+          {false && activeTab === "book" && (
+            <div className="space-y-6 text-left">
               
               {!activeBooking ? (
                 /* Interactive booking Form */
@@ -1862,6 +1932,9 @@ export default function App() {
 
       </main>
 
+      {/* FREQUENTLY ASKED CELESTIAL QUESTIONS */}
+      <AstroFaq />
+
       {/* Educational branding/trust indicators */}
       <section className="bg-white border-t-2 border-editorial-ink mt-12 py-10 px-4 md:px-8 text-center text-xs">
         <div className="max-w-6xl mx-auto space-y-6">
@@ -1925,8 +1998,8 @@ export default function App() {
                   <span className="bg-[#F2B705]/20 text-[#F2B705] border border-[#F2B705]/40 text-[9px] px-2.5 py-1 rounded-sm uppercase font-mono font-bold tracking-widest block w-fit mb-1.5 shadow-sm">
                     Executive Leadership & Divinity
                   </span>
-                  <h4 className="font-serif font-bold text-xl md:text-2xl text-white">Pathak Aanna</h4>
-                  <p className="text-xs text-stone-300">Jyotish & Founder, pathakaanna</p>
+                  <h4 className="font-serif font-bold text-xl md:text-2xl text-white">Pathak Anna</h4>
+                  <p className="text-xs text-stone-300">Jyotish & Founder, Pathak Anna Jyotish Karyalay</p>
                 </div>
                 <div className="bg-[#F2B705] text-[#1a1a1a] text-[10px] px-3.5 py-2 rounded-sm border-2 border-[#1a1a1a] font-mono lowercase tracking-tight font-black shadow-[3px_3px_0px_rgba(26,26,26,1)] animate-bounce">
                   consultation-expert
@@ -2000,14 +2073,20 @@ export default function App() {
                 </div>
 
                 <div className="space-y-3 flex-1 text-left">
-                  <h5 className="font-serif text-lg font-bold text-editorial-spirit flex items-center gap-1.5 leading-tight">
-                    Guiding Souls Worldwide through Sacred Sciences
+                  <h5 className="font-serif text-lg font-bold text-editorial-spirit flex items-center gap-1.5 leading-tight text-[#0B3C5D]">
+                    Pathak Anna – Astrologer & Life Guidance Consultant
                   </h5>
                   <span className="inline-flex bg-amber-100 text-[#78350f] font-mono border border-amber-300 text-[10px] px-2.5 py-0.5 rounded-sm font-bold uppercase tracking-wide">
-                    🏆 World Record Holder: 12,000+ Satisfied Clients
+                    🏆 Trusted Vedic Astrologer & Spiritual Mentor
                   </span>
                   <p className="text-xs text-slate-700 leading-relaxed font-sans mt-1">
-                    Founder **Pathak Aanna** is a master of esoteric diagnosis and destiny alignment. Gifted with intense intuitive foresight and deep academic rigor in classical Vedic lineages, he is revered for his precision in blending ancient planetary coordinates with empirical hand-analysis, signature calibration, and face mapping techniques to release stubborn energy blocks and unlock pathways of professional abundance.
+                    <strong>Pathak Anna</strong> is a trusted astrologer dedicated to helping individuals and families gain clarity, confidence, and direction in life through the wisdom of Vedic Astrology. With years of experience in horoscope analysis, planetary studies, and spiritual guidance, he has guided numerous people in making informed decisions related to career, finance, education, relationships, marriage, and personal growth.
+                  </p>
+                  <p className="text-xs text-slate-700 leading-relaxed font-sans">
+                    His approach combines traditional astrological knowledge with practical life guidance, enabling clients to understand challenges, identify opportunities, and move forward with greater confidence. Rather than focusing only on predictions, Pathak Anna believes in providing meaningful insights and actionable guidance that help people make better decisions and achieve long-term stability.
+                  </p>
+                  <p className="text-xs text-slate-700 leading-relaxed font-sans">
+                    Through <strong>Pathak Anna Jyotish Karyalay</strong>, he continues his mission of making authentic astrological guidance accessible to everyone seeking clarity about their future. His commitment to integrity, personalized consultation, and client satisfaction has earned the trust of people from diverse backgrounds.
                   </p>
                 </div>
               </div>
@@ -2065,6 +2144,28 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Vision and Mission Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-stone-100 pt-4 text-left">
+                <div className="p-4 bg-blue-50/50 rounded-sm border border-blue-200/50">
+                  <span className="text-xl">👁️</span>
+                  <h6 className="font-serif font-bold text-[#0B3C5D] text-xs uppercase tracking-wider mt-1 mb-1">
+                    Vision
+                  </h6>
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                    To empower individuals with accurate astrological insights and practical guidance so they can make confident decisions, overcome uncertainty, and create a balanced, successful, and fulfilling life.
+                  </p>
+                </div>
+                <div className="p-4 bg-amber-50/50 rounded-sm border border-amber-200/50">
+                  <span className="text-xl">🎯</span>
+                  <h6 className="font-serif font-bold text-amber-800 text-xs uppercase tracking-wider mt-1 mb-1">
+                    Mission
+                  </h6>
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                    To provide reliable, ethical, and personalized astrology consultations that help people gain clarity in career, finances, relationships, education, and life planning while preserving the rich traditions of Vedic Astrology.
+                  </p>
+                </div>
+              </div>
+
               {/* Trust Badge Section */}
               <div className="bg-editorial-bg border-l-4 border-amber-500 p-4 rounded-sm text-xs text-left">
                 <h6 className="font-serif font-bold text-[#0B3C5D] mb-1">🌠 The Pathak Lineage Philosophy</h6>
@@ -2077,7 +2178,7 @@ export default function App() {
               <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-left">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Personal Consultation:</span>
-                  <span className="text-lg font-bold text-amber-600 font-serif">₹2,000 <span className="text-xs text-slate-500 font-sans font-normal">/ 60-Min Private Session</span></span>
+                  <span className="text-lg font-bold text-amber-600 font-serif">₹2,100 <span className="text-xs text-slate-500 font-sans font-normal">/ 30-Min Private Session</span></span>
                 </div>
 
                 <button
@@ -2132,14 +2233,20 @@ export default function App() {
                   <p className="text-xs text-stone-300">Book private offline face-to-face consultation with Pathak Aanna (Call +91 8806510889)</p>
                 </div>
                 <div className="bg-[#F2B705] text-[#1a1a1a] text-[10px] px-3.5 py-2 rounded-sm border-2 border-[#1a1a1a] font-mono lowercase tracking-tight font-black shadow-[3px_3px_0px_rgba(26,26,26,1)] animate-bounce">
-                  Session Fee: ₹2,000
+                  Session Fee: ₹2,100 / 30-Min
                 </div>
               </div>
             </div>
 
             {/* Modal Scrollable Body */}
             <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-              {!activeBooking ? (
+              <AstroBookingFlow isModal={true} onBookingChanged={() => {}} />
+            </div>
+
+            {/* TEMPORARY BYPASSED MODAL REPLICA */}
+            {false && (
+              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                {!activeBooking ? (
                 /* Interactive booking Form */
                 <form
                   onSubmit={(e) => {
@@ -2499,12 +2606,30 @@ export default function App() {
                 </div>
               )}
             </div>
+            )}
 
           </div>
         </div>
       )}
 
-
+      {/* FLOATING WHATSAPP BUTTON */}
+      <a
+        href="https://wa.me/918806510889?text=Hello%20Pathak%20Aanna%2C%20I%2520would%2520like%2520to%2520inquire%2520about%2520astrology%2520consultation."
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 rounded-full border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-[1px_1px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all group scale-100 active:scale-95 duration-150"
+      >
+        <span className="absolute right-14 bg-white text-editorial-ink text-[11px] font-sans font-bold py-1 px-3.5 rounded-sm border-2 border-editorial-ink shadow-[2px_2px_0px_rgba(26,26,26,1)] opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+          Chat with Pathak Aanna 🌟
+        </span>
+        <MessageCircle className="w-6 h-6 fill-white text-[#25D366]" />
+        {/* Animated pulsing indicator badge */}
+        <span className="absolute top-0 right-0 flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+        </span>
+      </a>
 
     </div>
   );

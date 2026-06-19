@@ -121,7 +121,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
       astrologer_specialization: astrologer.specialization,
       consultation_type: type,
       scheduled_at: `${preferredDate} (${preferredSlot})`,
-      duration_minutes: 60,
+      duration_minutes: 30,
       total_fee_inr: totalFee,
       advance_amount_inr: advanceAmount,
       advance_percentage: advancePercentage,
@@ -203,7 +203,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
             break;
           case 5:
             updateDraft.preferredDate = messageText;
-            questionText = `Auspicious date! What is your **Preferred Time Slot**? (Type: **Slot 1**, **Slot 2**, **Slot 3**, **Slot 4**, or **Slot 5** - Acharya operates strictly 5 sessions of 60-mins max per day)`;
+            questionText = `Auspicious date! What is your **Preferred Time Slot**? (Type: **Slot 1**, **Slot 2**, **Slot 3**, **Slot 4**, or **Slot 5** - Acharya operates strictly 5 sessions of 30-mins max per day)`;
             break;
           case 6:
             updateDraft.preferredSlot = messageText;
@@ -234,7 +234,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
               astrologer_specialization: astrologer.specialization,
               consultation_type: updateDraft.consultationType,
               scheduled_at: `${updateDraft.preferredDate} (${updateDraft.preferredSlot})`,
-              duration_minutes: 60,
+              duration_minutes: 30,
               total_fee_inr: totalFee,
               advance_amount_inr: advanceAmount,
               advance_percentage: advancePercentage,

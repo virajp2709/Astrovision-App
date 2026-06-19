@@ -35,6 +35,8 @@ export interface BookingDetails {
     "2hr_before": string;
   };
   confirmation_message: string;
+  additional_message?: string;
+  screenshot_url?: string;
 }
 
 export interface KundliInputs {
