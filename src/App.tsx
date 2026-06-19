@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { BookingDetails, KundliInputs, CompatibilityInputs } from "./types";
 import { zodiacSigns, gemstonesData, vastuTipsDataList, astrolgersData, Astrologer } from "./data/astrologyData";
+import { FOUNDER_IMAGE_BASE64 } from "./data/founderImage";
 import { nakshatrasDataList, NakshatraDetails } from "./data/nakshatrasData";
 
 import AstroChat from "./components/AstroChat";
@@ -85,7 +86,7 @@ export default function App() {
   
   // Permanent premium photo of the founder loaded dynamically from backend or localized fallback
   const [founderPhoto, setFounderPhoto] = useState<string>(
-    "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+    FOUNDER_IMAGE_BASE64
   );
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
   const [photoUrlInput, setPhotoUrlInput] = useState("");

@@ -3,6 +3,7 @@ import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { DailyInsight, WeeklyForecast, BlogArticle } from "./astrologyHubTypes";
 import { preseededDailyInsights, preseededWeeklyForecasts, preseededBlogArticles } from "./blogInsightsPreseeded";
+import { FOUNDER_IMAGE_BASE64 } from "./founderImage";
 
 const DB_FILE_PATH = path.join(process.cwd(), "blogInsightsDb.json");
 
@@ -23,7 +24,7 @@ export function initDb(): BlogInsightsDb {
       const parsed = JSON.parse(data);
       if (!parsed.settings) {
         parsed.settings = {
-          founderPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+          founderPhoto: FOUNDER_IMAGE_BASE64
         };
         fs.writeFileSync(DB_FILE_PATH, JSON.stringify(parsed, null, 2), "utf-8");
       }
@@ -39,7 +40,7 @@ export function initDb(): BlogInsightsDb {
     weeklyForecasts: [...preseededWeeklyForecasts],
     blogArticles: [...preseededBlogArticles],
     settings: {
-      founderPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+      founderPhoto: FOUNDER_IMAGE_BASE64
     }
   };
   saveDb(db);

@@ -1,3 +1,5 @@
+import { FOUNDER_IMAGE_BASE64 } from "./founderImage";
+
 export interface ZodiacSign {
   id: string;
   name: string;
@@ -33,7 +35,7 @@ export const astrolgersData: Astrologer[] = [
     specialization: "Brain development, Signature & Handwriting Analysis, Face Reading analysis, Numerology Expert",
     rating: 5.0,
     consultationFee: 2100,
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200",
+    image: FOUNDER_IMAGE_BASE64,
   }
 ];
 
