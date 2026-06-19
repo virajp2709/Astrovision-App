@@ -2042,45 +2042,91 @@ export default function App() {
                   </div>
                   
                   {isEditingPhoto && (
-                    <div className="mt-3 p-3 bg-stone-50 border border-stone-200 rounded-sm text-left space-y-2 max-w-[200px] mx-auto text-xs">
-                      <label className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
-                        Paste Photo URL:
-                      </label>
-                      <input
-                        type="text"
-                        value={photoUrlInput}
-                        onChange={(e) => setPhotoUrlInput(e.target.value)}
-                        placeholder="Paste image URL..."
-                        className="w-full text-[10px] p-1 border border-stone-300 rounded-xs font-sans text-slate-700 focus:outline-[#0B3C5D]"
-                      />
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => {
-                            const trimmedUrl = photoUrlInput.trim();
-                            if (trimmedUrl) {
-                              setFounderPhoto(trimmedUrl);
-                              try {
-                                localStorage.setItem("astro_founder_photo", trimmedUrl);
-                              } catch(e) {}
-                              // Sync to backend file storage globally
-                              fetch("/api/settings", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ founderPhoto: trimmedUrl })
-                              }).catch((err) => console.log("Failed to sync settings:", err));
+                    <div className="mt-3 p-3 bg-stone-50 border border-stone-200 rounded-sm text-left space-y-3.5 max-w-[200px] mx-auto text-xs">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-[#0B3C5D] block">
+                          Option 1: Upload Photo File
+                        </label>
+                        <p className="text-[8px] text-stone-500 leading-tight mb-1">
+                          Select the image of Pathak Anna from your phone/device memory.
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const base64 = reader.result as string;
+                                if (base64) {
+                                  setFounderPhoto(base64);
+                                  setPhotoUrlInput(base64);
+                                  try {
+                                    localStorage.setItem("astro_founder_photo", base64);
+                                  } catch (err) {}
+                                  // Sync base64 directly to the server file-database
+                                  fetch("/api/settings", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ founderPhoto: base64 })
+                                  })
+                                  .then((res) => res.json())
+                                  .then((data) => {
+                                    if (data.success) {
+                                      console.log("Photo permanently uploaded successfully!");
+                                    }
+                                  })
+                                  .catch((err) => console.log("Failed to sync settings:", err));
+                                }
+                              };
+                              reader.readAsDataURL(file);
                             }
-                            setIsEditingPhoto(false);
                           }}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold px-2 py-1 rounded-xs flex-1 transition cursor-pointer"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => setIsEditingPhoto(false)}
-                          className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[9px] px-2 py-1 rounded-xs flex-1 transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
+                          className="w-full text-[9px] file:mr-1.5 file:py-1 file:px-2 file:rounded-xs file:border file:border-stone-300 file:text-[9px] file:bg-white hover:file:bg-stone-100 cursor-pointer text-stone-600"
+                        />
+                      </div>
+
+                      <div className="border-t border-stone-200 my-2 pt-2 space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                          Option 2: Paste Photo URL
+                        </label>
+                        <input
+                          type="text"
+                          value={photoUrlInput}
+                          onChange={(e) => setPhotoUrlInput(e.target.value)}
+                          placeholder="Paste image URL..."
+                          className="w-full text-[10px] p-1 border border-stone-300 rounded-xs font-sans text-slate-700 focus:outline-[#0B3C5D]"
+                        />
+                        <div className="flex gap-1 mt-1.5">
+                          <button
+                            onClick={() => {
+                              const trimmedUrl = photoUrlInput.trim();
+                              if (trimmedUrl) {
+                                setFounderPhoto(trimmedUrl);
+                                try {
+                                  localStorage.setItem("astro_founder_photo", trimmedUrl);
+                                } catch(e) {}
+                                // Sync to backend file storage globally
+                                fetch("/api/settings", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ founderPhoto: trimmedUrl })
+                                }).catch((err) => console.log("Failed to sync settings:", err));
+                              }
+                              setIsEditingPhoto(false);
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold px-2 py-1 rounded-xs flex-1 transition cursor-pointer"
+                          >
+                            Save URL
+                          </button>
+                          <button
+                            onClick={() => setIsEditingPhoto(false)}
+                            className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[9px] px-2 py-1 rounded-xs flex-1 transition cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
