@@ -31,6 +31,27 @@ export default function AstroBookingFlow({ onBookingChanged, initialSelectedAstr
   const [allBookings, setAllBookings] = useState<BookingDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Sync admin state from localStorage
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    try {
+      return localStorage.getItem("astro_admin_active") === "true";
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const checkAdmin = () => {
+      const active = localStorage.getItem("astro_admin_active") === "true";
+      if (active !== isAdminMode) {
+        setIsAdminMode(active);
+      }
+    };
+    checkAdmin();
+    const interval = setInterval(checkAdmin, 1000);
+    return () => clearInterval(interval);
+  }, [isAdminMode]);
+
   // Form State - Step 1
   const [formData, setFormData] = useState({
     fullName: "",
@@ -269,7 +290,7 @@ Please confirm my appointment.`;
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* LEFT COLUMN: ACTIVE SCHEDULER WIZARD */}
-        <div className={`col-span-1 ${isModal ? "lg:col-span-12" : "lg:col-span-7"} bg-white rounded-md border-2 border-slate-900 shadow-[4px_4px_0px_rgba(26,26,26,0.06)] p-5 relative overflow-hidden`}>
+        <div className={`col-span-1 ${(isModal || !isAdminMode) ? "lg:col-span-12" : "lg:col-span-7"} bg-white rounded-md border-2 border-slate-900 shadow-[4px_4px_0px_rgba(26,26,26,0.06)] p-5 relative overflow-hidden`}>
           
           {/* Form Wizard Progress Indicators */}
           <div className="flex items-center justify-between border-b pb-4 mb-5 border-slate-100 text-[10px] md:text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
@@ -685,145 +706,147 @@ Please confirm my appointment.`;
         </div>
 
         {/* RIGHT COLUMN: BOOKINGS HISTORY & VERIFICATION CONSOLE */}
-        <div className={`col-span-1 ${isModal ? "lg:col-span-12" : "lg:col-span-5"} bg-slate-950 text-white rounded-md border-2 border-slate-900 shadow-[4px_4px_0px_rgba(26,26,26,0.06)] p-5 space-y-5 text-left`}>
-          
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-            <h4 className="font-serif font-bold text-sm text-[#F2B705] flex items-center gap-1.5">
-              <CalendarDays className="w-5 h-5 text-[#F2B705]" />
-              Verification & Admin Console
-            </h4>
-            <span className="animate-pulse w-2 h-2 rounded-full bg-emerald-500"></span>
-          </div>
-
-          <p className="text-[11px] text-stone-400 leading-normal">
-            To whom the screenshot of payment and booking details have been sent, you can verify, review screenshot details, and approve below.
-          </p>
-
-          {/* Quick Filter Panel */}
-          <div className="bg-slate-900 p-3 rounded border border-stone-800 space-y-2">
-            <label className="text-[9px] font-mono text-[#F2B705] block uppercase tracking-wider font-extrabold">
-              Select Day to audit:
-            </label>
-            <div className="flex gap-2">
-              <input 
-                type="date"
-                value={adminFilterDate}
-                onChange={(e) => setAdminFilterDate(e.target.value)}
-                className="bg-slate-950 border border-stone-700 rounded text-xs px-2 py-1 flex-1 text-stone-200 outline-none focus:border-[#F2B705] transition font-mono"
-              />
-              <button 
-                onClick={() => setAdminFilterDate(new Date().toISOString().split("T")[0])}
-                className="bg-[#0B3C5D] hover:bg-indigo-950 text-white font-mono text-[9px] font-bold px-2 rounded cursor-pointer transition uppercase"
-              >
-                Today
-              </button>
+        {isAdminMode && !isModal && (
+          <div className={`col-span-1 ${isModal ? "lg:col-span-12" : "lg:col-span-5"} bg-slate-950 text-white rounded-md border-2 border-slate-900 shadow-[4px_4px_0px_rgba(26,26,26,0.06)] p-5 space-y-5 text-left`}>
+            
+            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+              <h4 className="font-serif font-bold text-sm text-[#F2B705] flex items-center gap-1.5">
+                <CalendarDays className="w-5 h-5 text-[#F2B705]" />
+                Verification & Admin Console
+              </h4>
+              <span className="animate-pulse w-2 h-2 rounded-full bg-emerald-500"></span>
             </div>
-          </div>
 
-          {adminSuccessMsg && (
-            <div className="p-2.5 bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-[10px] rounded leading-relaxed">
-              ✓ {adminSuccessMsg}
-            </div>
-          )}
+            <p className="text-[11px] text-stone-400 leading-normal">
+              To whom the screenshot of payment and booking details have been sent, you can verify, review screenshot details, and approve below.
+            </p>
 
-          {/* Render Bookings Filtered by selected day */}
-          <div className="space-y-3">
-            <span className="text-[9px] font-mono text-stone-400 uppercase tracking-widest block font-bold">
-              Appointments scheduled on selected date ({adminFilterDate}):
-            </span>
-
-            {loading ? (
-              <span className="text-[10px] text-stone-500">Loading planetary registers...</span>
-            ) : allBookings.filter(b => b.scheduled_at.startsWith(adminFilterDate)).length === 0 ? (
-              <div className="text-center py-6 border border-stone-800 rounded bg-slate-900/50">
-                <AlertCircle className="w-7 h-7 text-stone-600 mx-auto mb-2" />
-                <span className="text-[10px] text-stone-500 block">No requests found on this day.</span>
+            {/* Quick Filter Panel */}
+            <div className="bg-slate-900 p-3 rounded border border-stone-800 space-y-2">
+              <label className="text-[9px] font-mono text-[#F2B705] block uppercase tracking-wider font-extrabold">
+                Select Day to audit:
+              </label>
+              <div className="flex gap-2">
+                <input 
+                  type="date"
+                  value={adminFilterDate}
+                  onChange={(e) => setAdminFilterDate(e.target.value)}
+                  className="bg-slate-950 border border-stone-700 rounded text-xs px-2 py-1 flex-1 text-stone-200 outline-none focus:border-[#F2B705] transition font-mono"
+                />
+                <button 
+                  onClick={() => setAdminFilterDate(new Date().toISOString().split("T")[0])}
+                  className="bg-[#0B3C5D] hover:bg-indigo-950 text-white font-mono text-[9px] font-bold px-2 rounded cursor-pointer transition uppercase"
+                >
+                  Today
+                </button>
               </div>
-            ) : (
-              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                {allBookings
-                  .filter(b => b.scheduled_at.startsWith(adminFilterDate))
-                  .map((booking) => {
-                    return (
-                      <div 
-                        key={booking.booking_id} 
-                        className={`p-3 rounded border-2 text-stone-100 flex flex-col gap-2.5 transition shadow-[2px_2px_0px_rgba(26,26,26,0.06)] ${
-                          booking.status === "confirmed" 
-                            ? "bg-emerald-950/30 border-emerald-600/40" 
-                            : "bg-slate-900 border-stone-800"
-                        }`}
-                      >
-                        <div className="flex justify-between items-start gap-1">
-                          <div className="leading-tight">
-                            <span className="text-[9px] font-mono text-amber-500 block font-black">{booking.booking_id}</span>
-                            <h5 className="font-serif font-extrabold text-xs text-white">{booking.client_name}</h5>
-                            <span className="text-[9px] text-stone-400 block">{booking.consultation_type}</span>
-                          </div>
-                          
-                          <span className={`text-[8px] font-mono px-2 py-0.5 rounded uppercase font-black shrink-0 tracking-wider border ${
-                            booking.status === "confirmed" 
-                              ? "bg-emerald-950 border-emerald-500 text-emerald-400" 
-                              : "bg-amber-950 border-[#F2B705] text-[#F2B705] animate-pulse"
-                          }`}>
-                            {booking.status === "confirmed" ? "Verified" : "Pending UPI Proof"}
-                          </span>
-                        </div>
+            </div>
 
-                        <div className="text-[10px] text-stone-300 font-sans space-y-1 bg-slate-950/50 p-2 rounded border border-stone-800/80">
-                          <p><strong className="text-white">Mobile:</strong> {booking.client_mobile || "N/A"}</p>
-                          <p><strong className="text-white">Time:</strong> {booking.scheduled_at}</p>
-                          {booking.additional_message && (
-                            <p className="text-[9px] italic border-t border-stone-900 pt-1 text-stone-400 line-clamp-2">
-                              &ldquo;{booking.additional_message}&rdquo;
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Screenshot Visual verification proof */}
-                        {booking.screenshot_url && (
-                          <div className="flex items-center gap-2.5 bg-slate-900/60 p-1.5 rounded border border-[#F2B705]/10">
-                            <div className="w-10 h-10 border border-stone-700 bg-black rounded overflow-hidden shrink-0">
-                              <img 
-                                src={booking.screenshot_url} 
-                                alt="screenshot proof" 
-                                className="w-full h-full object-cover cursor-zoom-in" 
-                                onClick={() => {
-                                  const w = window.open();
-                                  w?.document.write(`<img src="${booking.screenshot_url}" style="max-width:100%; max-height:100vh; display:block; margin:auto;"/>`);
-                                }}
-                                referrerPolicy="no-referrer"
-                              />
-                            </div>
-                            <div className="text-left text-[9px] leading-tight flex-1">
-                              <span className="text-[#F2B705] font-extrabold uppercase font-mono block">Screenshot Proof Uploaded</span>
-                              <span className="text-stone-400 block mt-0.5">Click tile to enlarge. Verify match with UPI reference ID carefully.</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {booking.status === "pending_payment" && (
-                          <div className="flex gap-2 border-t border-stone-800/50 pt-2.5 items-center">
-                            <button
-                              onClick={() => confirmBookingAdmin(booking.booking_id)}
-                              className="w-full bg-[#0B3C5D] hover:bg-slate-900 text-white hover:text-[#F2B705] py-1.5 rounded border border-indigo-500 font-mono text-[9px] font-extrabold uppercase transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Verify & Confirm Booking</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+            {adminSuccessMsg && (
+              <div className="p-2.5 bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-[10px] rounded leading-relaxed">
+                ✓ {adminSuccessMsg}
               </div>
             )}
-          </div>
 
-          <div className="border-t border-stone-800 pt-3 text-[10px] text-stone-400 font-mono text-center">
-            * Storage is local but resilient to browser session clears.
-          </div>
+            {/* Render Bookings Filtered by selected day */}
+            <div className="space-y-3">
+              <span className="text-[9px] font-mono text-stone-400 uppercase tracking-widest block font-bold">
+                Appointments scheduled on selected date ({adminFilterDate}):
+              </span>
 
-        </div>
+              {loading ? (
+                <span className="text-[10px] text-stone-500">Loading planetary registers...</span>
+              ) : allBookings.filter(b => b.scheduled_at.startsWith(adminFilterDate)).length === 0 ? (
+                <div className="text-center py-6 border border-stone-800 rounded bg-slate-900/50">
+                  <AlertCircle className="w-7 h-7 text-stone-600 mx-auto mb-2" />
+                  <span className="text-[10px] text-stone-500 block">No requests found on this day.</span>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                  {allBookings
+                    .filter(b => b.scheduled_at.startsWith(adminFilterDate))
+                    .map((booking) => {
+                      return (
+                        <div 
+                          key={booking.booking_id} 
+                          className={`p-3 rounded border-2 text-stone-100 flex flex-col gap-2.5 transition shadow-[2px_2px_0px_rgba(26,26,26,0.06)] ${
+                            booking.status === "confirmed" 
+                              ? "bg-emerald-950/30 border-emerald-600/40" 
+                              : "bg-slate-900 border-stone-800"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start gap-1">
+                            <div className="leading-tight">
+                              <span className="text-[9px] font-mono text-amber-500 block font-black">{booking.booking_id}</span>
+                              <h5 className="font-serif font-extrabold text-xs text-white">{booking.client_name}</h5>
+                              <span className="text-[9px] text-stone-400 block">{booking.consultation_type}</span>
+                            </div>
+                            
+                            <span className={`text-[8px] font-mono px-2 py-0.5 rounded uppercase font-black shrink-0 tracking-wider border ${
+                              booking.status === "confirmed" 
+                                ? "bg-emerald-950 border-emerald-500 text-emerald-400" 
+                                : "bg-amber-950 border-[#F2B705] text-[#F2B705] animate-pulse"
+                            }`}>
+                              {booking.status === "confirmed" ? "Verified" : "Pending UPI Proof"}
+                            </span>
+                          </div>
+
+                          <div className="text-[10px] text-stone-300 font-sans space-y-1 bg-slate-950/50 p-2 rounded border border-stone-800/80">
+                            <p><strong className="text-white">Mobile:</strong> {booking.client_mobile || "N/A"}</p>
+                            <p><strong className="text-white">Time:</strong> {booking.scheduled_at}</p>
+                            {booking.additional_message && (
+                              <p className="text-[9px] italic border-t border-stone-900 pt-1 text-stone-400 line-clamp-2">
+                                &ldquo;{booking.additional_message}&rdquo;
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Screenshot Visual verification proof */}
+                          {booking.screenshot_url && (
+                            <div className="flex items-center gap-2.5 bg-slate-900/60 p-1.5 rounded border border-[#F2B705]/10">
+                              <div className="w-10 h-10 border border-stone-700 bg-black rounded overflow-hidden shrink-0">
+                                <img 
+                                  src={booking.screenshot_url} 
+                                  alt="screenshot proof" 
+                                  className="w-full h-full object-cover cursor-zoom-in" 
+                                  onClick={() => {
+                                    const w = window.open();
+                                    w?.document.write(`<img src="${booking.screenshot_url}" style="max-width:100%; max-height:100vh; display:block; margin:auto;"/>`);
+                                  }}
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                              <div className="text-left text-[9px] leading-tight flex-1">
+                                <span className="text-[#F2B705] font-extrabold uppercase font-mono block">Screenshot Proof Uploaded</span>
+                                <span className="text-stone-400 block mt-0.5">Click tile to enlarge. Verify match with UPI reference ID carefully.</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.status === "pending_payment" && (
+                            <div className="flex gap-2 border-t border-stone-800/50 pt-2.5 items-center">
+                              <button
+                                onClick={() => confirmBookingAdmin(booking.booking_id)}
+                                className="w-full bg-[#0B3C5D] hover:bg-slate-900 text-white hover:text-[#F2B705] py-1.5 rounded border border-indigo-500 font-mono text-[9px] font-extrabold uppercase transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Verify & Confirm Booking</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-stone-800 pt-3 text-[10px] text-stone-400 font-mono text-center">
+              * Storage is local but resilient to browser session clears.
+            </div>
+
+          </div>
+        )}
 
       </div>
 

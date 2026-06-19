@@ -93,7 +93,39 @@ export default function AstrologyHub() {
   const [selectedZodiacRange, setSelectedZodiacRange] = useState<"daily" | "weekly" | "monthly">("daily");
 
   // Admin and Editor state
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    try {
+      return localStorage.getItem("astro_admin_active") === "true";
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const active = localStorage.getItem("astro_admin_active") === "true";
+      if (active !== isAdminMode) {
+        setIsAdminMode(active);
+      }
+      if (!active && hubTab === "admin") {
+        setHubTab("daily");
+      }
+    };
+    const interval = setInterval(handleStorageChange, 1000);
+    return () => clearInterval(interval);
+  }, [isAdminMode, hubTab]);
+
+  const handleToggleAdmin = (enabled: boolean) => {
+    setIsAdminMode(enabled);
+    try {
+      if (enabled) {
+        localStorage.setItem("astro_admin_active", "true");
+      } else {
+        localStorage.removeItem("astro_admin_active");
+      }
+    } catch (e) {}
+  };
+
   const [adminToken, setAdminToken] = useState(""); // mock password to lock/unlock Admin Panel
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   
@@ -644,34 +676,36 @@ export default function AstrologyHub() {
         </div>
 
         {/* Sync & Admin controllers */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchHubData}
-            title="Squeeze latest alignments"
-            className="p-2.5 rounded bg-slate-900/80 border border-stone-700 hover:border-[#F2B705] text-[#F2B705] transition cursor-pointer"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+        {isAdminMode && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchHubData}
+              title="Squeeze latest alignments"
+              className="p-2.5 rounded bg-slate-900/80 border border-stone-700 hover:border-[#F2B705] text-[#F2B705] transition cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
 
-          {/* Admin Panel Selector */}
-          <button
-            onClick={() => {
-              if (isAdminMode) {
-                setIsAdminMode(false);
-              } else {
-                setShowAdminLogin(true);
-              }
-            }}
-            className={`px-4 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 border ${
-              isAdminMode 
-                ? "bg-purple-950 text-purple-200 border-purple-500/50" 
-                : "bg-slate-900 text-[#F2B705] border-stone-800 hover:border-[#F2B705]/80"
-            }`}
-          >
-            {isAdminMode ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-            {isAdminMode ? "Admin Active" : "Author Access"}
-          </button>
-        </div>
+            {/* Admin Panel Selector */}
+            <button
+              onClick={() => {
+                if (isAdminMode) {
+                  handleToggleAdmin(false);
+                } else {
+                  setShowAdminLogin(true);
+                }
+              }}
+              className={`px-4 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 border ${
+                isAdminMode 
+                  ? "bg-purple-950 text-purple-200 border-purple-500/50" 
+                  : "bg-slate-900 text-[#F2B705] border-stone-800 hover:border-[#F2B705]/80"
+              }`}
+            >
+              {isAdminMode ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+              {isAdminMode ? "Admin Active" : "Author Access"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ADMIN PASSCODE DIALOG */}
@@ -705,7 +739,7 @@ export default function AstrologyHub() {
               <button
                 onClick={() => {
                   if (adminToken.trim().toLowerCase() === "admin") {
-                    setIsAdminMode(true);
+                    handleToggleAdmin(true);
                     setHubTab("admin");
                     setShowAdminLogin(false);
                     setAdminToken("");
@@ -841,7 +875,7 @@ export default function AstrologyHub() {
       </div>
 
       {/* CORE HUB NAVIGATION TAB BAR */}
-      <div className="relative z-10 grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 bg-slate-950/80 rounded border border-stone-800/70 mb-6 select-none shadow-md">
+      <div className={`relative z-10 grid grid-cols-2 ${isAdminMode ? "sm:grid-cols-5" : "sm:grid-cols-4"} gap-1.5 p-1 bg-slate-950/80 rounded border border-stone-800/70 mb-6 select-none shadow-md`}>
         <button
           onClick={() => setHubTab("daily")}
           className={`py-3 px-1.5 text-center text-xs font-mono font-bold uppercase tracking-wider transition rounded cursor-pointer ${
@@ -882,22 +916,20 @@ export default function AstrologyHub() {
         >
           🌟 Zodiac Wheel
         </button>
-        <button
-          onClick={() => {
-            if (isAdminMode) {
+        {isAdminMode && (
+          <button
+            onClick={() => {
               setHubTab("admin");
-            } else {
-              setShowAdminLogin(true);
-            }
-          }}
-          className={`col-span-2 sm:col-span-1 py-3 px-1.5 text-center text-xs font-mono font-bold uppercase tracking-wider transition rounded cursor-pointer ${
-            hubTab === "admin"
-              ? "bg-purple-900 text-purple-100 border-b-2 border-[#F2B705]"
-              : "text-purple-400 hover:bg-purple-950/20"
-          }`}
-        >
-          ⚙️ Operator Console
-        </button>
+            }}
+            className={`col-span-2 sm:col-span-1 py-3 px-1.5 text-center text-xs font-mono font-bold uppercase tracking-wider transition rounded cursor-pointer ${
+              hubTab === "admin"
+                ? "bg-purple-900 text-purple-100 border-b-2 border-[#F2B705]"
+                : "text-purple-400 hover:bg-purple-950/20"
+            }`}
+          >
+            ⚙️ Operator Console
+          </button>
+        )}
       </div>
 
       {/* RENDER ACTIVE TAB VIEW */}

@@ -91,6 +91,25 @@ export default function App() {
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
   const [photoUrlInput, setPhotoUrlInput] = useState("");
 
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      return localStorage.getItem("astro_admin_active") === "true";
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const active = localStorage.getItem("astro_admin_active") === "true";
+      if (active !== isAdmin) {
+        setIsAdmin(active);
+      }
+    };
+    const interval = setInterval(handleStorageChange, 1000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
   // Retrieve customized founder photo URL from the server on mount
   useEffect(() => {
     fetch("/api/settings")
@@ -1973,7 +1992,29 @@ export default function App() {
           </div>
 
           <div className="border-t border-stone-200 pt-6 max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center text-slate-500 text-[11px] gap-4">
-            <p>&copy; 2026 pathakaanna @ Pathak Aanna. Powered by NakshatraAI. All celestial remedies guided by pure Sanatana values.</p>
+            <p 
+              onDoubleClick={() => {
+                const passcode = prompt("Enter Admin Passcode:");
+                if (passcode === "admin") {
+                  try {
+                    localStorage.setItem("astro_admin_active", "true");
+                    setIsAdmin(true);
+                  } catch (e) {}
+                  alert("Admin mode activated! The Operator Console, Schedulers Auditing, and Profile Photo Editor are now available.");
+                } else if (passcode === "logout" || passcode === "exit") {
+                  try {
+                    localStorage.removeItem("astro_admin_active");
+                    setIsAdmin(false);
+                  } catch (e) {}
+                  alert("Logged out of Admin mode. The website is now display-only for visitors.");
+                } else if (passcode !== null) {
+                  alert("Incorrect password.");
+                }
+              }}
+              className="select-none"
+            >
+              &copy; 2026 pathakaanna @ Pathak Aanna. Powered by NakshatraAI. All celestial remedies guided by pure Sanatana values.
+            </p>
             <div className="flex gap-4">
               <span className="hover:text-slate-800 hover:underline cursor-pointer">Terms of Service</span>
               <span className="hover:text-slate-800 hover:underline cursor-pointer">Cancellation Policy</span>
@@ -2030,18 +2071,20 @@ export default function App() {
                       className="w-32 h-32 object-cover rounded-sm border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,0.15)] bg-slate-100 mx-auto"
                       referrerPolicy="no-referrer"
                     />
-                    <button
-                      onClick={() => {
-                        setPhotoUrlInput(founderPhoto);
-                        setIsEditingPhoto(!isEditingPhoto);
-                      }}
-                      className="absolute bottom-1 right-1 bg-white hover:bg-slate-100 text-[#1a1a1a] border border-[#1a1a1a] text-[9px] font-bold py-1 px-2 rounded-xs flex items-center justify-center gap-1 shadow-md transition cursor-pointer"
-                    >
-                      📷 Edit
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setPhotoUrlInput(founderPhoto);
+                          setIsEditingPhoto(!isEditingPhoto);
+                        }}
+                        className="absolute bottom-1 right-1 bg-white hover:bg-slate-100 text-[#1a1a1a] border border-[#1a1a1a] text-[9px] font-bold py-1 px-2 rounded-xs flex items-center justify-center gap-1 shadow-md transition cursor-pointer"
+                      >
+                        📷 Edit
+                      </button>
+                    )}
                   </div>
                   
-                  {isEditingPhoto && (
+                  {isAdmin && isEditingPhoto && (
                     <div className="mt-3 p-3 bg-stone-50 border border-stone-200 rounded-sm text-left space-y-3.5 max-w-[200px] mx-auto text-xs">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold uppercase tracking-wider text-[#0B3C5D] block">
