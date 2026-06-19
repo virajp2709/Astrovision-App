@@ -14,7 +14,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
     {
       id: "welcome",
       sender: "nakshatra",
-      text: "🙏 Jay Shree Ram! I am NakshatraAI, your spiritual guide and astrology companion at Braincord Solution. I can analyze your Kundli, match compatibility, align Vastu elements, or prescribe divine gemstones. \n\nIf you seek an in-depth reading, you can book a sacred consultation with our certified Jyotish Pathak Aanna. Simply let me know, or use the dedicated booking form directly on this page!",
+      text: "🙏 Jay Shree Ram! I am NakshatraAI, your spiritual guide and astrology companion at pathakaanna. I can analyze your Kundli, match compatibility, align Vastu elements, or prescribe divine gemstones. \n\nIf you seek an in-depth reading, you can book a sacred consultation with our certified Jyotish Pathak Aanna. Simply let me know, or use the dedicated booking form directly on this page!",
       timestamp: new Date(),
     }
   ]);
@@ -121,7 +121,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
       astrologer_specialization: astrologer.specialization,
       consultation_type: type,
       scheduled_at: `${preferredDate} (${preferredSlot})`,
-      duration_minutes: 45,
+      duration_minutes: 60,
       total_fee_inr: totalFee,
       advance_amount_inr: advanceAmount,
       advance_percentage: advancePercentage,
@@ -203,7 +203,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
             break;
           case 5:
             updateDraft.preferredDate = messageText;
-            questionText = `Auspicious date! What is your **Preferred Time Slot**? (Type: **Morning**, **Afternoon**, or **Evening**)`;
+            questionText = `Auspicious date! What is your **Preferred Time Slot**? (Type: **Slot 1**, **Slot 2**, **Slot 3**, **Slot 4**, or **Slot 5** - Acharya operates strictly 5 sessions of 60-mins max per day)`;
             break;
           case 6:
             updateDraft.preferredSlot = messageText;
@@ -211,7 +211,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
             break;
           case 7:
             updateDraft.consultationType = messageText;
-            questionText = `Lastly, please enter your **Contact Mobile Number** to deliver your Zoom consultation links and alerts:`;
+            questionText = `Lastly, please enter your **Contact Mobile Number** so we can coordinate your private offline consultation and send updates (feel free to call us directly at 8806510889 for immediate queries):`;
             break;
           case 8:
             updateDraft.contactNumber = messageText;
@@ -234,7 +234,7 @@ export default function AstroChat({ onBookingDetected, activeBooking }: AstroCha
               astrologer_specialization: astrologer.specialization,
               consultation_type: updateDraft.consultationType,
               scheduled_at: `${updateDraft.preferredDate} (${updateDraft.preferredSlot})`,
-              duration_minutes: 45,
+              duration_minutes: 60,
               total_fee_inr: totalFee,
               advance_amount_inr: advanceAmount,
               advance_percentage: advancePercentage,
@@ -382,7 +382,7 @@ Provide your DOB details in the "Kundli" tab to view your current active Mahadas
         
 I am here to guide you with any question regarding Kundli Analysis, Kundli Milan compatibility, daily Horoscopes, gemstone prescriptions, or Vastu tips.
         
-If you wish to schedule a personal online face-to-face meet with Pathak Aanna Let me know or click "I want to book an appointment".`;
+If you wish to schedule a personal offline face-to-face consultation with Pathak Aanna, let me know, click "I want to book an appointment", or call us directly at 8806510889.`;
       }
 
       setMessages((prev) => [

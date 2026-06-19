@@ -23,29 +23,37 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
-  BookOpen
+  BookOpen,
+  Mail,
+  Search,
+  X,
+  RotateCcw,
+  Info
 } from "lucide-react";
 import { BookingDetails, KundliInputs, CompatibilityInputs } from "./types";
 import { zodiacSigns, gemstonesData, vastuTipsDataList, astrolgersData, Astrologer } from "./data/astrologyData";
+import { nakshatrasDataList, NakshatraDetails } from "./data/nakshatrasData";
 
 import AstroChat from "./components/AstroChat";
+import AstrologyHub from "./components/AstrologyHub";
+
 
 export function BraincordLogo() {
   return (
     <div className="flex flex-col items-center bg-[#07070a] px-5 py-2.5 rounded-lg border-2 border-editorial-ink shadow-[3px_3px_0px_rgba(26,26,26,1)] select-none">
-      {/* ASTROVISION */}
+      {/* PATHAKAANNA */}
       <div className="flex font-sans font-black text-2xl tracking-[0.04em] leading-none mb-1">
-        <span className="text-[#3a85f7]">A</span>
-        <span className="text-[#ea4335]">S</span>
+        <span className="text-[#3a85f7]">P</span>
+        <span className="text-[#ea4335]">A</span>
         <span className="text-[#fbbc05]">T</span>
-        <span className="text-[#34a853]">R</span>
-        <span className="text-[#ea4335]">O</span>
-        <span className="text-[#34a853]">V</span>
-        <span className="text-[#2b7bf4]">I</span>
-        <span className="text-[#ea4335]">S</span>
-        <span className="text-[#fbbc05]">I</span>
-        <span className="text-[#34a853]">O</span>
-        <span className="bg-gradient-to-r from-[#2b7bf4] to-[#ea4335] bg-clip-text text-transparent">N</span>
+        <span className="text-[#34a853]">H</span>
+        <span className="text-[#ea4335]">A</span>
+        <span className="text-[#34a853]">K</span>
+        <span className="text-[#2b7bf4]">A</span>
+        <span className="text-[#ea4335]">A</span>
+        <span className="text-[#fbbc05]">N</span>
+        <span className="text-[#34a853]">N</span>
+        <span className="bg-gradient-to-r from-[#2b7bf4] to-[#ea4335] bg-clip-text text-transparent">A</span>
       </div>
 
       {/* @ Pathak Aanna */}
@@ -62,7 +70,12 @@ export function BraincordLogo() {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"horoscope" | "vastu" | "book">("horoscope");
+  const [activeTab, setActiveTab] = useState<"nakshatras" | "horoscope" | "vastu" | "book" | "insights-hub">("insights-hub");
+  const [nakshatraSearch, setNakshatraSearch] = useState("");
+  const [selectedRulerFilter, setSelectedRulerFilter] = useState("All");
+  const [selectedGanaFilter, setSelectedGanaFilter] = useState("All");
+  const [selectedNakshatraId, setSelectedNakshatraId] = useState<string | null>(null);
+  
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [founderPhoto, setFounderPhoto] = useState<string>(() => {
@@ -119,13 +132,170 @@ export default function App() {
   const [selectedGemCategory, setSelectedGemCategory] = useState("Career Growth");
 
   // Booking Module States
+  const [allBookings, setAllBookings] = useState<BookingDetails[]>(() => {
+    const saved = localStorage.getItem("astro_bookings_history");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Error parsing saved bookings:", e);
+      }
+    }
+    // Set initial mock bookings to demonstrate daily booking limit of 5.
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrowTemp = new Date();
+    tomorrowTemp.setDate(tomorrowTemp.getDate() + 1);
+    const tomorrow = tomorrowTemp.toISOString().split("T")[0];
+    
+    const initialMockBookings: BookingDetails[] = [
+      {
+        booking_id: "ASTRO-111111",
+        status: "confirmed",
+        client_name: "Aarav Sharma",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Kundli",
+        scheduled_at: `${today} (Slot 1 (09:00 AM - 10:00 AM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-222222",
+        status: "confirmed",
+        client_name: "Ishita Kapoor",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Marriage",
+        scheduled_at: `${today} (Slot 3 (02:00 PM - 03:00 PM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-333333",
+        status: "confirmed",
+        client_name: "Rohit Verma",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Career",
+        scheduled_at: `${tomorrow} (Slot 1 (09:00 AM - 10:00 AM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-444444",
+        status: "confirmed",
+        client_name: "Nikhil Joshi",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Finance",
+        scheduled_at: `${tomorrow} (Slot 2 (11:00 AM - 12:00 PM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-555555",
+        status: "confirmed",
+        client_name: "Ananya Sen",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Numerology",
+        scheduled_at: `${tomorrow} (Slot 3 (02:00 PM - 03:00 PM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-666666",
+        status: "confirmed",
+        client_name: "Sanya Mehta",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Health",
+        scheduled_at: `${tomorrow} (Slot 4 (04:30 PM - 05:30 PM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      },
+      {
+        booking_id: "ASTRO-777777",
+        status: "confirmed",
+        client_name: "Aditya Roy",
+        astrologer_name: "Pathak Aanna",
+        astrologer_specialization: "Brain development, Signature, Numerology Expert",
+        consultation_type: "Career",
+        scheduled_at: `${tomorrow} (Slot 5 (07:00 PM - 08:00 PM))`,
+        duration_minutes: 60,
+        total_fee_inr: 2000,
+        advance_amount_inr: 600,
+        advance_percentage: 30,
+        payment_deadline: `${today} 18:00`,
+        payment_methods: ["UPI"],
+        upi_id: "astrosage@upi",
+        refund_policy: { "24hr_before": "100%", "12hr_before": "50%", "2hr_before": "No" },
+        confirmation_message: "Confirmed"
+      }
+    ];
+    localStorage.setItem("astro_bookings_history", JSON.stringify(initialMockBookings));
+    return initialMockBookings;
+  });
+
+  const saveBookingToHistory = (booking: BookingDetails) => {
+    setAllBookings(prev => {
+      const filtered = prev.filter(b => b.booking_id !== booking.booking_id);
+      const updated = [...filtered, booking];
+      localStorage.setItem("astro_bookings_history", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const [bookingForm, setBookingForm] = useState({
     name: "",
+    email: "",
     dob: "",
     tob: "",
     pob: "",
     preferredDate: "",
-    preferredSlot: "Morning",
+    preferredSlot: "Slot 1 (09:00 AM - 10:00 AM)",
     consultationType: "Kundli",
     contactNumber: "",
     selectedAstroId: "astro-aanna"
@@ -133,6 +303,12 @@ export default function App() {
   const [activeBooking, setActiveBooking] = useState<BookingDetails | null>(null);
   const [bookingError, setBookingError] = useState("");
   const [copiedInvoiceJson, setCopiedInvoiceJson] = useState(false);
+
+  // Razorpay Dynamic Checkout States
+  const [isPaying, setIsPaying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Helper payment deadline countdown
   const [countdownMinutes, setCountdownMinutes] = useState(15);
@@ -272,19 +448,33 @@ export default function App() {
     e.preventDefault();
     setBookingError("");
 
-    const { name, dob, tob, pob, preferredDate, preferredSlot, consultationType, contactNumber, selectedAstroId } = bookingForm;
+    const { name, email, dob, tob, pob, preferredDate, preferredSlot, consultationType, contactNumber, selectedAstroId } = bookingForm;
 
-    if (!name || !dob || !tob || !pob || !preferredDate || !contactNumber) {
-      setBookingError("Please complete all required fields to align your consultation.");
+    if (!name || !email || !dob || !tob || !pob || !preferredDate || !contactNumber) {
+      setBookingError("Please complete all required fields (including dynamic email) to align your consultation.");
+      return;
+    }
+
+    // Check if this date has already reached 5 bookings in total
+    const bookingsOnThisDate = allBookings.filter(b => b.scheduled_at.startsWith(preferredDate));
+    if (bookingsOnThisDate.length >= 5) {
+      setBookingError(`⚠️ Divine Limit Exceeded: Acharya Aanna takes exactly 5 sessions per day to safeguard absolute spiritual energy and deep cognitive focus. Selected date "${preferredDate}" is fully booked. Please choose another date.`);
+      return;
+    }
+
+    // Check if this particular slot is already taken for selected date
+    const slotIsTaken = bookingsOnThisDate.some(b => b.scheduled_at.includes(preferredSlot));
+    if (slotIsTaken) {
+      setBookingError(`⚠️ Slot Conflict: "${preferredSlot}" has already been booked by another seeker on this date. Please select one of the other available hourly slots.`);
       return;
     }
 
     // Fetch details of astrologer
     const astrologer = astrolgersData.find((a) => a.id === selectedAstroId) || astrolgersData[0];
     const bookingId = "ASTRO-" + Math.floor(100000 + Math.random() * 900000);
-    const totalFee = astrologer.consultationFee;
-    const advancePercentage = 30; // 30% advance
-    const advanceAmount = Math.round((totalFee * advancePercentage) / 100);
+    const totalFee = 2000; // Consultation fee set to 2000 INR
+    const advanceAmount = 600; // Advance payment set to 600 INR
+    const advancePercentage = 30; // 30% advance for 600 INR of 2000 INR
 
     const todayStr = new Date().toISOString().split("T")[0];
     const deadlineTime = "18:00";
@@ -293,11 +483,13 @@ export default function App() {
       booking_id: bookingId,
       status: "pending_payment",
       client_name: name,
+      client_email: email,
+      client_mobile: contactNumber,
       astrologer_name: astrologer.name,
       astrologer_specialization: astrologer.specialization,
       consultation_type: consultationType,
       scheduled_at: `${preferredDate} (${preferredSlot})`,
-      duration_minutes: 45,
+      duration_minutes: 60,
       total_fee_inr: totalFee,
       advance_amount_inr: advanceAmount,
       advance_percentage: advancePercentage,
@@ -313,13 +505,39 @@ export default function App() {
     };
 
     setActiveBooking(newBooking);
+    // Also store initially as pending in history
+    saveBookingToHistory(newBooking);
     setCountdownMinutes(15);
     setCountdownSeconds(0);
   };
 
   // Trigger from chat when pasted details are successfully parsed
   const handleBookingDetectedInChat = (booking: BookingDetails) => {
-    setActiveBooking(booking);
+    const updatedWith60MinFee = {
+      ...booking,
+      duration_minutes: 60,
+      total_fee_inr: 2000,
+      advance_amount_inr: 600
+    };
+    setActiveBooking(updatedWith60MinFee);
+    
+    let extractedSlot = "Slot 1 (09:00 AM - 10:00 AM)";
+    const bracketMatch = booking.scheduled_at.match(/\(([^)]+)\)/);
+    if (bracketMatch && bracketMatch[1]) {
+      const inner = bracketMatch[1].trim();
+      if (inner.includes("Slot 1") || inner.includes("Morning")) {
+        extractedSlot = "Slot 1 (09:00 AM - 10:00 AM)";
+      } else if (inner.includes("Slot 2")) {
+        extractedSlot = "Slot 2 (11:00 AM - 12:00 PM)";
+      } else if (inner.includes("Slot 3") || inner.includes("Afternoon")) {
+        extractedSlot = "Slot 3 (02:00 PM - 03:00 PM)";
+      } else if (inner.includes("Slot 4")) {
+        extractedSlot = "Slot 4 (04:30 PM - 05:30 PM)";
+      } else if (inner.includes("Slot 5") || inner.includes("Evening")) {
+        extractedSlot = "Slot 5 (07:00 PM - 08:00 PM)";
+      }
+    }
+
     // Auto populate booking form fields to sync
     setBookingForm({
       name: booking.client_name,
@@ -327,7 +545,7 @@ export default function App() {
       tob: "17:45",
       pob: "Mumbai, MH, India",
       preferredDate: booking.scheduled_at.split(" ")[0],
-      preferredSlot: booking.scheduled_at.includes("Evening") ? "Evening" : "Morning",
+      preferredSlot: extractedSlot,
       consultationType: booking.consultation_type,
       contactNumber: "+91 8806510889",
       selectedAstroId: "astro-aanna"
@@ -350,13 +568,149 @@ export default function App() {
       "Cosmic Rescheduling:\n\nRefund Rules:\n- 100% refund if cancelled 24hrs before\n- 50% refund if cancelled within 12hrs\n- No refund under 2hrs.\n\nYour session is being reset."
     );
     setActiveBooking(null);
+    setPaymentSuccess(false);
+    setPaymentError("");
+  };
+
+  const handleRazorpayPayment = async () => {
+    if (!activeBooking) return;
+    setIsPaying(true);
+    setPaymentError("");
+    setPaymentSuccess(false);
+
+    try {
+      // 1. Create order on Express backend
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount_inr: activeBooking.advance_amount_inr,
+          booking_id: activeBooking.booking_id
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to initiate Razorpay order.");
+      }
+
+      const orderData = await res.json();
+
+      // 2. Open standard Razorpay Checkout matching the exact key ID that succeeded on our server side
+      const rzpKey = orderData.key_id || (import.meta as any).env.VITE_RAZORPAY_KEY_ID || "rzp_test_SsmTMqvCYkHbGF";
+      
+      const options = {
+        key: rzpKey,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "pathakaanna & NakshatraAI",
+        description: `Panchanga Advance (${activeBooking.advance_percentage}%) for ${activeBooking.consultation_type}`,
+        image: "https://ai.studio/build/favicon.ico",
+        order_id: orderData.order_id,
+        handler: async function (response: any) {
+          setIsVerifying(true);
+          try {
+            // 3. Verify payment signature on Express backend
+            const verifyRes = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            if (!verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              throw new Error(verifyData.error || "Payment signature verification failed.");
+            }
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              setPaymentSuccess(true);
+              setPaymentError("");
+              // Mark booking as fully confirmed!
+              setActiveBooking((prev) => {
+                if (!prev) return null;
+                const confirmed = {
+                  ...prev,
+                  status: "confirmed" as const,
+                  confirmation_message: "✨ Astro-Slot Safely Authenticated & Paid via Razorpay!"
+                };
+                saveBookingToHistory(confirmed);
+                return confirmed;
+              });
+            } else {
+              throw new Error("Payment signature verification rejected.");
+            }
+          } catch (verifyError: any) {
+            console.error("Verification error:", verifyError);
+            setPaymentError(verifyError.message || "Could not verify payment authenticity.");
+          } finally {
+            setIsVerifying(false);
+            setIsPaying(false);
+          }
+        },
+        prefill: {
+          name: activeBooking.client_name,
+          email: bookingForm.email || activeBooking.client_email || "",
+          contact: bookingForm.contactNumber || activeBooking.client_mobile || ""
+        },
+        theme: {
+          color: "#0B3C5D"
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPaying(false);
+            setPaymentError("Payment process closed by client.");
+          }
+        }
+      };
+
+      const razorpayInstance = new (window as any).Razorpay(options);
+      
+      razorpayInstance.on("payment.failed", function (response: any) {
+        console.error("Razorpay Payment Failed:", response.error);
+        setPaymentError(`Payment failed: ${response.error.description}`);
+        setIsPaying(false);
+      });
+
+      razorpayInstance.open();
+
+    } catch (err: any) {
+      console.error("Razorpay initialization error:", err);
+      setPaymentError(err.message || "Failed to start Razorpay checkout transaction.");
+      setIsPaying(false);
+    }
+  };
+
+  const getFilteredNakshatras = () => {
+    return nakshatrasDataList.filter((n) => {
+      const matchSearch =
+        n.name.toLowerCase().includes(nakshatraSearch.toLowerCase()) ||
+        n.sanskritName.includes(nakshatraSearch) ||
+        n.span.toLowerCase().includes(nakshatraSearch.toLowerCase()) ||
+        n.characteristics.toLowerCase().includes(nakshatraSearch.toLowerCase()) ||
+        n.ruler.toLowerCase().includes(nakshatraSearch.toLowerCase()) ||
+        n.deity.toLowerCase().includes(nakshatraSearch.toLowerCase());
+
+      const matchRuler = selectedRulerFilter === "All" || n.ruler.toLowerCase() === selectedRulerFilter.toLowerCase();
+      const matchGana = selectedGanaFilter === "All" || n.gana.toLowerCase() === selectedGanaFilter.toLowerCase();
+
+      return matchSearch && matchRuler && matchGana;
+    });
   };
 
   return (
     <div className="min-h-screen bg-editorial-bg flex flex-col font-sans transition-colors duration-300">
       
       {/* Dynamic Nav Header */}
-      <header className="sticky top-0 z-40 bg-white border-b-2 border-editorial-ink px-4 md:px-8 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+      <header className="relative sm:sticky sm:top-0 z-40 bg-white border-b-2 border-editorial-ink px-4 md:px-8 py-4 flex flex-col sm:flex-row gap-3 items-center justify-between shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4 flex-wrap">
           <BraincordLogo />
           
@@ -427,7 +781,7 @@ export default function App() {
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Column: NakshatraAI Live Chat (5/12 cols) */}
-        <section className="lg:col-span-5 w-full flex flex-col h-full sticky top-[80px]">
+        <section className="lg:col-span-5 w-full flex flex-col h-full lg:sticky lg:top-[90px]">
           <div className="mb-2 text-left px-1 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-editorial-accent fill-editorial-accent/20" />
@@ -449,49 +803,299 @@ export default function App() {
         {/* Right Column: Dynamic Interactive Tabs (7/12 cols) */}
         <section className="lg:col-span-7 w-full space-y-6">
           
-          {/* Dashboard Tab Buttons Selection */}
-          <div id="main-tabs-container" className="bg-white p-1.5 rounded-md border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,0.08)] flex flex-wrap gap-1.5">
+          {/* NAVIGATION TAB BAR */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 bg-white p-2 rounded-md border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,0.1)]">
             <button
-              onClick={() => setActiveTab("horoscope")}
-              className={`flex-1 min-w-[125px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-sm text-xs md:text-sm font-bold tracking-tight transition cursor-pointer ${
-                activeTab === "horoscope"
-                  ? "bg-editorial-ink text-white shadow-[2px_2px_0px_rgba(67,56,202,0.15)]"
-                  : "text-slate-700 hover:text-editorial-spirit hover:bg-slate-50"
+              id="tab-insights-hub"
+              onClick={() => setActiveTab("insights-hub")}
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "insights-hub"
+                  ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-purple-950/10 text-purple-750 border-purple-500/20 hover:bg-purple-950/20"
               }`}
             >
-              <Sparkles className="w-4 h-4 shrink-0" />
-              Rashi & Numerology
+              🌌 Insights Hub
             </button>
             <button
+              id="tab-nakshatras"
+              onClick={() => setActiveTab("nakshatras")}
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "nakshatras"
+                  ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
+              }`}
+            >
+              🌌 Nakshatras
+            </button>
+            <button
+              id="tab-vastu"
               onClick={() => setActiveTab("vastu")}
-              className={`flex-1 min-w-[120px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-sm text-xs md:text-sm font-bold tracking-tight transition cursor-pointer ${
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
                 activeTab === "vastu"
-                  ? "bg-editorial-ink text-white shadow-[2px_2px_0px_rgba(67,56,202,0.15)]"
-                  : "text-slate-700 hover:text-editorial-spirit hover:bg-slate-50"
+                  ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
               }`}
             >
-              <Gem className="w-4 h-4 shrink-0" />
-              Vastu & Remedies
+              🧭 Vastu & Gems
             </button>
             <button
-              onClick={() => setActiveTab("book")}
-              className={`flex-1 min-w-[130px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-sm text-xs md:text-sm font-bold tracking-tight transition relative cursor-pointer ${
-                activeTab === "book"
-                  ? "bg-editorial-ink text-white shadow-[2px_2px_0px_rgba(67,56,202,0.15)]"
-                  : "text-slate-700 hover:text-editorial-spirit hover:bg-slate-50"
+              id="tab-horoscope"
+              onClick={() => setActiveTab("horoscope")}
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "horoscope"
+                  ? "bg-[#0B3C5D] text-white border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-stone-50 text-slate-700 border-stone-200 hover:bg-stone-100"
               }`}
             >
-              <Calendar className="w-4 h-4 shrink-0" />
-              Book Astrologer
-              {activeBooking && (
-                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-editorial-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-editorial-accent"></span>
-                </span>
-              )}
+              🌟 Zodiac & Numbers
+            </button>
+            <button
+              id="tab-book"
+              onClick={() => setActiveTab("book")}
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-sm border transition text-center cursor-pointer ${
+                activeTab === "book"
+                  ? "bg-[#0B3C5D] text-[#F2B705] border-none shadow-[2px_2px_0px_rgba(11,60,93,0.2)] font-black"
+                  : "bg-[#F2B705] text-[#1a1a1a] border-[#1a1a1a] hover:bg-[#dca204] shadow-[1px_1px_0px_rgba(26,26,26,0.5)]"
+              }`}
+            >
+              🗓️ Book Offline
             </button>
           </div>
-          
+
+          {/* TAB 0: ASTROLOGY INSIGHTS HUB */}
+          {activeTab === "insights-hub" && (
+            <AstrologyHub />
+          )}
+
+
+          {/* TAB 1: 27 NAKSHATRAS ENCYCLOPEDIA */}
+          {activeTab === "nakshatras" && (
+            <div className="space-y-6 text-left">
+              <div className="bg-white rounded-md border-2 border-editorial-ink shadow-[8px_8px_0px_rgba(26,26,26,0.06)] overflow-hidden">
+                <div className="bg-[#0B3C5D] text-white p-5 border-b-2 border-editorial-ink relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="font-serif font-bold text-base md:text-lg flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-[#F2B705] fill-[#F2B705]/20 animate-pulse" />
+                      The 27 Sacred Nakshatras (Lunar Mansions)
+                    </h4>
+                    <p className="text-xs text-indigo-100 mt-1">Explore precise coordinates, ruling deities, cosmic signatures, and specific ritual remedies for all 27 birth stars.</p>
+                  </div>
+                  <div className="absolute right-[-20px] bottom-[-20px] opacity-10 pointer-events-none">
+                    <Compass className="w-32 h-32 text-white animate-[spin_40s_linear_infinite]" />
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-5 bg-white">
+                  {/* Search and Filters panel */}
+                  <div className="flex flex-col gap-4 border-b border-stone-100 pb-5">
+                    <div className="relative w-full">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search by Nakshatra Name, deity, ruling planet, or star sign span..."
+                        value={nakshatraSearch}
+                        onChange={(e) => setNakshatraSearch(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2.5 rounded-sm border-2 border-editorial-ink text-xs focus:ring-1 focus:ring-[#0B3C5D] placeholder:text-slate-400 font-sans"
+                      />
+                      {nakshatraSearch && (
+                        <button
+                          onClick={() => setNakshatraSearch("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filter by Ruling Planet */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                        Filter by Planet Ruler:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["All", "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"].map((ruler) => (
+                          <button
+                            key={ruler}
+                            onClick={() => setSelectedRulerFilter(ruler)}
+                            className={`px-2.5 py-1 text-[11px] font-semibold rounded-sm border transition cursor-pointer ${
+                              selectedRulerFilter === ruler
+                                ? "bg-[#0B3C5D] text-white border-[#0B3C5D] font-bold"
+                                : "bg-stone-50 border-stone-200 text-slate-600 hover:bg-stone-100"
+                            }`}
+                          >
+                            {ruler}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Filter by Gana */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                          Filter by Gana (Temperament):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {["All", "Deva", "Manushya", "Rakshasa"].map((gana) => (
+                            <button
+                              key={gana}
+                              onClick={() => setSelectedGanaFilter(gana)}
+                              className={`px-2.5 py-1 text-[11px] font-semibold rounded-sm border transition cursor-pointer ${
+                                selectedGanaFilter === gana
+                                  ? "bg-slate-900 text-white border-slate-900 font-bold"
+                                  : "bg-stone-50 border-stone-200 text-slate-600 hover:bg-stone-100"
+                              }`}
+                            >
+                              {gana}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {(nakshatraSearch || selectedRulerFilter !== "All" || selectedGanaFilter !== "All") && (
+                        <button
+                          onClick={() => {
+                            setNakshatraSearch("");
+                            setSelectedRulerFilter("All");
+                            setSelectedGanaFilter("All");
+                          }}
+                          className="self-end sm:self-auto flex items-center gap-1 text-[11px] font-bold text-editorial-accent hover:underline cursor-pointer py-1"
+                        >
+                          <RotateCcw className="w-3 h-3" /> Clear All Filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Nakshatras Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getFilteredNakshatras().map((nakshatra) => {
+                      const isExpanded = selectedNakshatraId === nakshatra.id;
+                      return (
+                        <div
+                          key={nakshatra.id}
+                          id={`nakshatra-card-${nakshatra.id}`}
+                          onClick={() => setSelectedNakshatraId(isExpanded ? null : nakshatra.id)}
+                          className={`bg-white border-2 rounded-sm transition-all duration-200 p-4 flex flex-col justify-between text-left gap-3 cursor-pointer hover:border-[#0B3C5D] relative overflow-hidden ${
+                            isExpanded
+                              ? "border-[#0B3C5D] ring-1 ring-[#0B3C5D]/10 bg-slate-50/50 shadow-[4px_4px_12px_rgba(11,60,93,0.08)]"
+                              : "border-editorial-ink/30 shadow-[3px_3px_0px_rgba(26,26,26,0.03)] hover:shadow-[4px_4px_0px_rgba(26,26,26,0.06)]"
+                          }`}
+                        >
+                          {/* Card Header */}
+                          <div className="flex justify-between items-start border-b border-dashed border-stone-100 pb-2">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-mono text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded-sm">
+                                  {nakshatrasDataList.findIndex((n) => n.id === nakshatra.id) + 1}/27
+                                </span>
+                                <h5 className="font-serif font-black text-slate-900 text-base flex items-center gap-1.5">
+                                  {nakshatra.name}
+                                  <span className="text-editorial-accent font-normal italic text-xs font-sans">
+                                    ({nakshatra.sanskritName})
+                                  </span>
+                                </h5>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-semibold mt-1 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full inline-block"></span>
+                                {nakshatra.span}
+                              </p>
+                            </div>
+                            
+                            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-sm bg-[#F2B705]/10 border border-[#F2B705]/30 text-amber-950 font-extrabold shadow-sm">
+                              {nakshatra.ruler}
+                            </span>
+                          </div>
+
+                          {/* Attributes Table Grid */}
+                          <div className="grid grid-cols-2 gap-2 text-[11px] font-sans text-slate-700 bg-white/60 p-2.5 rounded-sm border border-stone-100">
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Deity Presence:</span>
+                              <span className="font-medium text-slate-800">{nakshatra.deity.split(" (")[0]}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Cosmic Symbol:</span>
+                              <span className="font-medium text-slate-800">{nakshatra.symbol}</span>
+                            </div>
+                            <div className="mt-1">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Gana (Nature):</span>
+                              <span className={`px-1.5 py-0.2 rounded-full font-bold text-[9px] ${
+                                nakshatra.gana === "Deva" ? "bg-emerald-50 text-emerald-800 border border-emerald-100" :
+                                nakshatra.gana === "Manushya" ? "bg-amber-50 text-amber-800 border border-amber-100" :
+                                "bg-rose-50 text-rose-800 border border-rose-100"
+                              }`}>{nakshatra.gana}</span>
+                            </div>
+                            <div className="mt-1">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Mahabhuta Element:</span>
+                              <span className="font-medium text-slate-800">{nakshatra.element}</span>
+                            </div>
+                          </div>
+
+                          {/* Expanded detail pane on select */}
+                          {isExpanded ? (
+                            <div className="space-y-4 pt-2 border-t border-stone-200 mt-2 text-xs text-left">
+                              <div className="space-y-1 bg-[#0B3C5D]/5 p-2.5 rounded-sm border border-[#0B3C5D]/10">
+                                <span className="text-[9px] uppercase font-bold text-[#0B3C5D] font-mono tracking-wider block">Spiritual Totem Animal:</span>
+                                <p className="font-medium text-slate-900 flex items-center gap-1">
+                                  🐾 {nakshatra.animal}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-editorial-accent font-mono tracking-wider block">Key Stellar Characteristics:</span>
+                                <p className="text-slate-800 leading-relaxed font-sans">{nakshatra.characteristics}</p>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-emerald-800 font-mono tracking-wider block">Sacred Initiatives / Best For:</span>
+                                <p className="text-slate-800 leading-relaxed font-sans">{nakshatra.bestUse}</p>
+                              </div>
+
+                              <div className="bg-emerald-50/50 p-2.5 rounded-sm border border-emerald-200/50 space-y-1 relative">
+                                <span className="text-[9px] uppercase font-bold text-emerald-950 font-mono tracking-wider block">Divine Root Seed Mantra chanting:</span>
+                                <p className="font-serif font-extrabold text-[#0B3C5D] italic text-xs">
+                                  &quot;{nakshatra.mantra}&quot;
+                                </p>
+                              </div>
+
+                              <button
+                                className="w-full text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 pt-1 flex items-center justify-center gap-1 cursor-pointer font-sans"
+                              >
+                                Collapse Details ▲
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-center text-[10px] font-bold text-[#0B3C5D] uppercase tracking-wider hover:underline flex items-center justify-center gap-1 fn-sans">
+                              View Detailed Astrology Profile <ChevronRight className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {getFilteredNakshatras().length === 0 && (
+                      <div className="col-span-1 md:col-span-2 p-8 text-center bg-stone-50 border border-dashed border-stone-200 rounded-sm">
+                        <Info className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                        <h6 className="font-sans font-bold text-slate-700 text-sm">No Celestial Alignments Matching Active Filters</h6>
+                        <p className="text-xs text-slate-500 mt-1">Try resetting the keyword query or selecting "All" rulers.</p>
+                        <button
+                          onClick={() => {
+                            setNakshatraSearch("");
+                            setSelectedRulerFilter("All");
+                            setSelectedGanaFilter("All");
+                          }}
+                          className="mt-3 text-xs font-bold uppercase tracking-widest bg-editorial-ink text-white px-4 py-2 rounded-sm border-2 border-editorial-ink cursor-pointer"
+                        >
+                          Clear Filters
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB 2: HOROSCOPES & NUMEROLOGY */}
           {activeTab === "horoscope" && (
             <div className="space-y-6 text-left">
@@ -815,7 +1419,7 @@ export default function App() {
                       <Calendar className="w-5 h-5 text-editorial-accent fill-white/10" />
                       Schedule Certified Astrologer Consultation
                     </h4>
-                    <p className="text-[10px] text-indigo-100">Collect full parameters to schedule online one-on-one video session</p>
+                    <p className="text-[10px] text-indigo-100">Provide details to schedule an offline face-to-face consultation (Call +91 8806510889 any time)</p>
                   </div>
 
                   <form onSubmit={handleBookingSubmit} className="p-5 space-y-6">
@@ -907,6 +1511,21 @@ export default function App() {
                         </div>
                       </div>
 
+                      <div className="space-y-1 text-xs sm:col-span-2">
+                        <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Email Address (For Secure Razorpay Ticket & Invoice)</label>
+                        <div className="relative">
+                          <Mail className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                          <input
+                            type="email"
+                            required
+                            value={bookingForm.email}
+                            onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                            placeholder="rahul.sharma@gmail.com"
+                            className="w-full bg-editorial-bg border border-editorial-ink rounded-sm pl-9 pr-3 py-2 outline-none focus:ring-1 focus:ring-editorial-accent text-editorial-ink font-semibold"
+                          />
+                        </div>
+                      </div>
+
                       <div className="space-y-1 text-xs">
                         <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Day of Birth</label>
                         <input
@@ -956,16 +1575,28 @@ export default function App() {
                       </div>
 
                       <div className="space-y-1 text-xs">
-                        <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Preferred Time Slot</label>
+                        <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Preferred Time Slot (Strictly 60-Min Each)</label>
                         <select
                           value={bookingForm.preferredSlot}
                           onChange={(e) => setBookingForm({ ...bookingForm, preferredSlot: e.target.value })}
-                          className="w-full bg-editorial-bg border border-editorial-ink rounded-sm px-3 py-2.5 outline-none focus:ring-1 focus:ring-editorial-accent text-xs font-semibold text-editorial-ink"
+                          className="w-full bg-editorial-bg border border-editorial-ink rounded-sm px-3 py-2.5 outline-none focus:ring-1 focus:ring-editorial-accent text-xs font-semibold text-editorial-ink font-mono"
                         >
-                          <option value="Morning">Morning Slot (09:00 AM - 12:00 PM)</option>
-                          <option value="Afternoon">Afternoon Slot (01:00 PM - 04:00 PM)</option>
-                          <option value="Evening">Evening Slot (05:00 PM - 08:30 PM)</option>
+                          <option value="Slot 1 (09:00 AM - 10:00 AM)">Slot 1 (09:00 AM - 10:00 AM)</option>
+                          <option value="Slot 2 (11:00 AM - 12:00 PM)">Slot 2 (11:00 AM - 12:00 PM)</option>
+                          <option value="Slot 3 (02:00 PM - 03:00 PM)">Slot 3 (02:00 PM - 03:00 PM)</option>
+                          <option value="Slot 4 (04:30 PM - 05:30 PM)">Slot 4 (04:30 PM - 05:30 PM)</option>
+                          <option value="Slot 5 (07:00 PM - 08:00 PM)">Slot 5 (07:00 PM - 08:00 PM)</option>
                         </select>
+
+                        {/* Interactive Slot Counter */}
+                        {bookingForm.preferredDate && (
+                          <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono font-bold bg-[#0B3C5D]/5 p-2 rounded-sm border border-[#0B3C5D]/10">
+                            <span className="text-slate-500 uppercase">Daily Slots Taken:</span>
+                            <span className={allBookings.filter(b => b.scheduled_at.startsWith(bookingForm.preferredDate)).length >= 5 ? "text-rose-600 font-extrabold" : "text-[#0B3C5D]"}>
+                              {allBookings.filter(b => b.scheduled_at.startsWith(bookingForm.preferredDate)).length} / 5 sessions
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-1 text-xs">
@@ -1051,37 +1682,113 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* UPI QR Payment Area */}
-                  <div className="mx-5 bg-editorial-bg p-4 border border-editorial-ink/30 rounded-sm flex flex-col md:flex-row gap-5 items-center justify-center text-xs shadow-inner">
-                    
-                    {/* Simulated QR Code box */}
-                    <div className="w-24 h-24 bg-white border border-editorial-ink p-1 rounded-sm flex flex-col items-center justify-center shrink-0 shadow-sm">
-                      {/* Fake stylized scan QR */}
-                      <div className="grid grid-cols-5 gap-0.5 w-[76px] h-[76px]">
-                        {[...Array(25)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-full h-full rounded-sm ${
-                              (i % 3 === 0 || i < 5 || i % 6 === 0) && i !== 12 ? "bg-slate-900" : "bg-white"
-                            }`}
-                          />
-                        ))}
+                  {/* RAZORPAY SECURE GATEWAY CHECKOUT PANEL */}
+                  <div className="mx-5 bg-gradient-to-br from-[#0B3C5D]/5 to-white border-2 border-[#0B3C5D] p-5 rounded-sm flex flex-col gap-4 text-xs shadow-md">
+                    <div className="flex items-center justify-between border-b pb-2.5 border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 bg-[#0B3C5D]/10 rounded-sm">
+                          <ShieldCheck className="w-5 h-5 text-[#0B3C5D]" />
+                        </span>
+                        <div className="text-left">
+                          <h5 className="font-serif font-black text-slate-900 text-sm">Official Razorpay Booking Gateway</h5>
+                          <p className="text-[10px] text-slate-500 font-medium">Instant authentication via Card, Netbanking, UPI, Wallet</p>
+                        </div>
                       </div>
+                      <span className="text-[10px] font-mono bg-amber-100 text-amber-950 border border-amber-200 px-2 py-0.5 rounded-sm font-black uppercase tracking-wider">
+                        Secure
+                      </span>
                     </div>
 
-                    <div className="text-left space-y-2 flex-1">
-                      <h5 className="font-serif font-bold text-editorial-spirit flex items-center gap-1.5 text-sm">
-                        <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                        Initiate Payment to Secure Slot
-                      </h5>
-                      <p className="text-slate-700 leading-normal">
-                        Scan the gateway QR with any UPI app (GPay, PhonePe, Paytm, Wallet) or use transfer address ID:
-                      </p>
-                      <div className="bg-white border-2 border-editorial-ink p-2 px-3 rounded-sm font-mono font-bold text-slate-800 shadow-sm inline-block select-all">
-                        {activeBooking.upi_id}
+                    {paymentError && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-rose-700 rounded-sm font-semibold text-xs leading-normal text-left">
+                        ⚠️ {paymentError}
                       </div>
-                    </div>
+                    )}
+
+                    {activeBooking.status === "confirmed" ? (
+                      <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-950 rounded-sm font-sans flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm">
+                        <span className="p-1 px-2 bg-emerald-600 text-white rounded-full text-xs font-bold">
+                          ✓ Paid
+                        </span>
+                        <h6 className="font-bold text-sm tracking-tight text-emerald-900">Celestial Consultation Confirmed!</h6>
+                        <p className="text-xs leading-relaxed text-emerald-800 text-center">
+                          Your custom geo-astral slot has been successfully scheduled and authenticated. Pathak Aanna will meet you on your preferred slot.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-sm border border-slate-200 shadow-inner gap-3">
+                          <div className="text-left">
+                            <span className="text-slate-500 uppercase font-mono text-[9px] block">30% Advance Slot Deposit:</span>
+                            <span className="text-base font-black text-[#0B3C5D] font-mono">INR {activeBooking.advance_amount_inr}.00</span>
+                          </div>
+                          
+                          <button
+                            onClick={handleRazorpayPayment}
+                            disabled={isPaying || isVerifying}
+                            className="w-full sm:w-auto bg-[#0B3C5D] hover:bg-slate-950 text-[#F2B705] font-black py-2.5 px-5 rounded-sm border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-none transition duration-150 active:translate-y-0.5 hover:text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-wider shrink-0"
+                          >
+                            {isPaying ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border-2 border-[#F2B705] border-t-transparent rounded-full" />
+                                <span>Starting Secure Pay...</span>
+                              </>
+                            ) : isVerifying ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                                <span>Verifying Token...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="w-4 h-4 text-[#F2B705] fill-[#F2B705] animate-pulse" />
+                                <span>Pay Securely with Razorpay</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        
+                        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 text-center font-mono select-none">
+                          <span>🛡️ 256-bit SSL Secure</span>
+                          <span>•</span>
+                          <span>⚡ Auto-activated slot</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Manual UPI fallback accordion */}
+                  {activeBooking.status !== "confirmed" && (
+                    <details className="mx-5 border border-editorial-ink/20 rounded-sm bg-white text-xs overflow-hidden">
+                      <summary className="bg-slate-50 px-4 py-2.5 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition select-none flex items-center justify-between">
+                        <span>Alternative Option: Manual UPI Bank QR Code Transfer</span>
+                        <span className="text-xs text-[#0B3C5D]">View QR</span>
+                      </summary>
+                      <div className="p-4 border-t border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-center">
+                        <div className="w-20 h-20 bg-white border border-editorial-ink p-1 rounded-sm flex flex-col items-center justify-center shrink-0 shadow-sm">
+                          <div className="grid grid-cols-5 gap-0.5 w-[64px] h-[64px]">
+                            {[...Array(25)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-full h-full rounded-sm ${
+                                  (i % 3 === 0 || i < 5 || i % 6 === 0) && i !== 12 ? "bg-slate-900" : "bg-white"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="text-left space-y-1.5 flex-1">
+                          <h6 className="font-bold text-amber-950 text-xs">Direct UPI Node Link (Manual Verification Required):</h6>
+                          <p className="text-slate-600 leading-normal text-[11px]">
+                            Scan or copy transfer ID below:
+                          </p>
+                          <div className="bg-stone-50 border border-editorial-ink p-1.5 px-3 rounded-sm font-mono font-bold text-slate-800 shadow-sm inline-block select-all text-xs">
+                            {activeBooking.upi_id}
+                          </div>
+                        </div>
+                      </div>
+                    </details>
+                  )}
 
                   {/* Refund Policy Area */}
                   <div className="mx-5 border border-editorial-ink/20 bg-stone-50 p-4 rounded-sm text-left text-xs space-y-2.5">
@@ -1182,7 +1889,7 @@ export default function App() {
           </div>
 
           <div className="border-t border-stone-200 pt-6 max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center text-slate-500 text-[11px] gap-4">
-            <p>&copy; 2026 Braincord Solution @ Pathak Aanna. Powered by NakshatraAI. All celestial remedies guided by pure Sanatana values.</p>
+            <p>&copy; 2026 pathakaanna @ Pathak Aanna. Powered by NakshatraAI. All celestial remedies guided by pure Sanatana values.</p>
             <div className="flex gap-4">
               <span className="hover:text-slate-800 hover:underline cursor-pointer">Terms of Service</span>
               <span className="hover:text-slate-800 hover:underline cursor-pointer">Cancellation Policy</span>
@@ -1219,7 +1926,7 @@ export default function App() {
                     Executive Leadership & Divinity
                   </span>
                   <h4 className="font-serif font-bold text-xl md:text-2xl text-white">Pathak Aanna</h4>
-                  <p className="text-xs text-stone-300">Jyotish & Founder, Braincord Solution</p>
+                  <p className="text-xs text-stone-300">Jyotish & Founder, pathakaanna</p>
                 </div>
                 <div className="bg-[#F2B705] text-[#1a1a1a] text-[10px] px-3.5 py-2 rounded-sm border-2 border-[#1a1a1a] font-mono lowercase tracking-tight font-black shadow-[3px_3px_0px_rgba(26,26,26,1)] animate-bounce">
                   consultation-expert
@@ -1370,7 +2077,7 @@ export default function App() {
               <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-left">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Personal Consultation:</span>
-                  <span className="text-lg font-bold text-amber-600 font-serif">₹3,100 <span className="text-xs text-slate-500 font-sans font-normal">/ 45-Min Private Session</span></span>
+                  <span className="text-lg font-bold text-amber-600 font-serif">₹2,000 <span className="text-xs text-slate-500 font-sans font-normal">/ 60-Min Private Session</span></span>
                 </div>
 
                 <button
@@ -1380,10 +2087,8 @@ export default function App() {
                       selectedAstroId: "astro-aanna",
                       consultationType: "Numerology"
                     });
-                    setActiveTab("book");
+                    setIsBookingModalOpen(true);
                     setIsAboutModalOpen(false); // Close the modal too
-                    const el = document.getElementById("main-tabs-container");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
                   }}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0B3C5D] text-white hover:bg-slate-950 border-2 border-editorial-ink px-5 py-2.5 font-bold text-xs rounded-sm tracking-wide uppercase transition duration-150 shadow-[4px_4px_0px_rgba(26,26,26,1)] active:translate-y-0.5 cursor-pointer hover:shadow-none"
                 >
@@ -1424,10 +2129,10 @@ export default function App() {
                   <h4 className="font-serif font-bold text-xl md:text-2xl text-white flex items-center gap-1.5">
                     <Calendar className="w-5 h-5 text-[#F2B705]" /> Direct Scheduling Panel
                   </h4>
-                  <p className="text-xs text-stone-300">Book private online one-on-one session with Pathak Aanna</p>
+                  <p className="text-xs text-stone-300">Book private offline face-to-face consultation with Pathak Aanna (Call +91 8806510889)</p>
                 </div>
                 <div className="bg-[#F2B705] text-[#1a1a1a] text-[10px] px-3.5 py-2 rounded-sm border-2 border-[#1a1a1a] font-mono lowercase tracking-tight font-black shadow-[3px_3px_0px_rgba(26,26,26,1)] animate-bounce">
-                  Session Fee: ₹3,100
+                  Session Fee: ₹2,000
                 </div>
               </div>
             </div>
@@ -1475,6 +2180,22 @@ export default function App() {
                           value={bookingForm.contactNumber}
                           onChange={(e) => setBookingForm({ ...bookingForm, contactNumber: e.target.value })}
                           placeholder="+91 8806510889"
+                          className="w-full bg-editorial-bg border border-editorial-ink rounded-sm pl-9 pr-3 py-2 outline-none focus:ring-1 focus:ring-editorial-accent text-editorial-ink font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Address */}
+                    <div className="space-y-1 text-xs sm:col-span-2">
+                      <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Email Address (For Secure Razorpay Ticket & Invoice)</label>
+                      <div className="relative">
+                        <Mail className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="email"
+                          required
+                          value={bookingForm.email}
+                          onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                          placeholder="rahul.sharma@gmail.com"
                           className="w-full bg-editorial-bg border border-editorial-ink rounded-sm pl-9 pr-3 py-2 outline-none focus:ring-1 focus:ring-editorial-accent text-editorial-ink font-semibold"
                         />
                       </div>
@@ -1534,16 +2255,28 @@ export default function App() {
 
                     {/* Preferred Slot */}
                     <div className="space-y-1 text-xs">
-                      <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Preferred Time Slot</label>
+                      <label className="font-bold uppercase tracking-wider text-[10px] text-slate-700">Preferred Time Slot (Strictly 60-Min Each)</label>
                       <select
                         value={bookingForm.preferredSlot}
                         onChange={(e) => setBookingForm({ ...bookingForm, preferredSlot: e.target.value })}
-                        className="w-full bg-editorial-bg border border-editorial-ink rounded-sm px-3 py-2.5 outline-none focus:ring-1 focus:ring-editorial-accent text-xs font-semibold text-editorial-ink"
+                        className="w-full bg-editorial-bg border border-editorial-ink rounded-sm px-3 py-2.5 outline-none focus:ring-1 focus:ring-editorial-accent text-xs font-semibold text-editorial-ink font-mono"
                       >
-                        <option value="Morning">Morning Slot (09:00 AM - 12:00 PM)</option>
-                        <option value="Afternoon">Afternoon Slot (01:00 PM - 04:00 PM)</option>
-                        <option value="Evening">Evening Slot (05:00 PM - 08:30 PM)</option>
+                        <option value="Slot 1 (09:00 AM - 10:00 AM)">Slot 1 (09:00 AM - 10:00 AM)</option>
+                        <option value="Slot 2 (11:00 AM - 12:00 PM)">Slot 2 (11:00 AM - 12:00 PM)</option>
+                        <option value="Slot 3 (02:00 PM - 03:00 PM)">Slot 3 (02:00 PM - 03:00 PM)</option>
+                        <option value="Slot 4 (04:30 PM - 05:30 PM)">Slot 4 (04:30 PM - 05:30 PM)</option>
+                        <option value="Slot 5 (07:00 PM - 08:00 PM)">Slot 5 (07:00 PM - 08:00 PM)</option>
                       </select>
+
+                      {/* Interactive Slot Counter for Mobile */}
+                      {bookingForm.preferredDate && (
+                        <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono font-bold bg-[#0B3C5D]/5 p-2 rounded-sm border border-[#0B3C5D]/10">
+                          <span className="text-slate-500 uppercase">Daily Slots Taken:</span>
+                          <span className={allBookings.filter(b => b.scheduled_at.startsWith(bookingForm.preferredDate)).length >= 5 ? "text-rose-600 font-extrabold" : "text-[#0B3C5D]"}>
+                            {allBookings.filter(b => b.scheduled_at.startsWith(bookingForm.preferredDate)).length} / 5 sessions
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Consultation Type */}
@@ -1625,34 +2358,113 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* UPI QR */}
-                  <div className="bg-editorial-bg p-4 border border-editorial-ink/30 rounded-sm flex flex-col md:flex-row gap-5 items-center justify-center text-xs shadow-inner">
-                    <div className="w-20 h-20 bg-white border border-editorial-ink p-1 rounded-sm flex flex-col items-center justify-center shrink-0 shadow-sm">
-                      <div className="grid grid-cols-5 gap-0.5 w-[64px] h-[64px]">
-                        {[...Array(25)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-full h-full rounded-sm ${
-                              (i % 3 === 0 || i < 5 || i % 6 === 0) && i !== 12 ? "bg-slate-900" : "bg-white"
-                            }`}
-                          />
-                        ))}
+                  {/* RAZORPAY SECURE GATEWAY CHECKOUT PANEL */}
+                  <div className="bg-gradient-to-br from-[#0B3C5D]/5 to-white border-2 border-[#0B3C5D] p-5 rounded-sm flex flex-col gap-4 text-xs shadow-md">
+                    <div className="flex items-center justify-between border-b pb-2.5 border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 bg-[#0B3C5D]/10 rounded-sm">
+                          <ShieldCheck className="w-5 h-5 text-[#0B3C5D]" />
+                        </span>
+                        <div className="text-left">
+                          <h5 className="font-serif font-black text-slate-900 text-sm">Official Razorpay Booking Gateway</h5>
+                          <p className="text-[10px] text-slate-500 font-medium">Instant authentication via Card, Netbanking, UPI, Wallet</p>
+                        </div>
                       </div>
+                      <span className="text-[10px] font-mono bg-amber-100 text-amber-950 border border-amber-200 px-2 py-0.5 rounded-sm font-black uppercase tracking-wider">
+                        Secure
+                      </span>
                     </div>
 
-                    <div className="text-left space-y-1.5 flex-1">
-                      <h5 className="font-serif font-bold text-editorial-spirit flex items-center gap-1 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                        Scan to Secure Scheduling Slot
-                      </h5>
-                      <p className="text-slate-600 leading-tight text-[11px]">
-                        Transfer 30% advance via UPI app using this verified ID:
-                      </p>
-                      <div className="bg-white border-2 border-editorial-ink p-1.5 px-3 rounded-sm font-mono font-bold text-slate-800 shadow-sm inline-block select-all text-xs">
-                        {activeBooking.upi_id}
+                    {paymentError && (
+                      <div className="p-3 bg-red-50 border border-red-200 text-rose-700 rounded-sm font-semibold text-xs leading-normal text-left">
+                        ⚠️ {paymentError}
                       </div>
-                    </div>
+                    )}
+
+                    {activeBooking.status === "confirmed" ? (
+                      <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-950 rounded-sm font-sans flex flex-col items-center justify-center text-center space-y-1.5 shadow-sm">
+                        <span className="p-1 px-2 bg-emerald-600 text-white rounded-full text-xs font-bold">
+                          ✓ Paid
+                        </span>
+                        <h6 className="font-bold text-sm tracking-tight text-emerald-900">Celestial Consultation Confirmed!</h6>
+                        <p className="text-xs leading-relaxed text-emerald-800 text-center">
+                          Your custom geo-astral slot has been successfully scheduled and authenticated. Pathak Aanna will meet you on your preferred slot.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-sm border border-slate-200 shadow-inner gap-3">
+                          <div className="text-left">
+                            <span className="text-slate-500 uppercase font-mono text-[9px] block">30% Advance Slot Deposit:</span>
+                            <span className="text-base font-black text-[#0B3C5D] font-mono">INR {activeBooking.advance_amount_inr}.00</span>
+                          </div>
+                          
+                          <button
+                            onClick={handleRazorpayPayment}
+                            disabled={isPaying || isVerifying}
+                            className="w-full sm:w-auto bg-[#0B3C5D] hover:bg-slate-950 text-[#F2B705] font-black py-2.5 px-5 rounded-sm border-2 border-editorial-ink shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-none transition duration-150 active:translate-y-0.5 hover:text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-wider shrink-0"
+                          >
+                            {isPaying ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border-2 border-[#F2B705] border-t-transparent rounded-full" />
+                                <span>Starting Secure Pay...</span>
+                              </>
+                            ) : isVerifying ? (
+                              <>
+                                <span className="animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                                <span>Verifying Token...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="w-4 h-4 text-[#F2B705] fill-[#F2B705] animate-pulse" />
+                                <span>Pay Securely with Razorpay</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        
+                        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 text-center font-mono select-none">
+                          <span>🛡️ 256-bit SSL Secure</span>
+                          <span>•</span>
+                          <span>⚡ Auto-activated slot</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Manual UPI fallback accordion */}
+                  {activeBooking.status !== "confirmed" && (
+                    <details className="border border-editorial-ink/20 rounded-sm bg-white text-xs overflow-hidden">
+                      <summary className="bg-slate-50 px-4 py-2.5 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition select-none flex items-center justify-between">
+                        <span>Alternative Option: Manual UPI Bank QR Code Transfer</span>
+                        <span className="text-xs text-[#0B3C5D]">View QR</span>
+                      </summary>
+                      <div className="p-4 border-t border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-center">
+                        <div className="w-20 h-20 bg-white border border-editorial-ink p-1 rounded-sm flex flex-col items-center justify-center shrink-0 shadow-sm">
+                          <div className="grid grid-cols-5 gap-0.5 w-[64px] h-[64px]">
+                            {[...Array(25)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-full h-full rounded-sm ${
+                                  (i % 3 === 0 || i < 5 || i % 6 === 0) && i !== 12 ? "bg-slate-900" : "bg-white"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="text-left space-y-1.5 flex-1">
+                          <h6 className="font-bold text-amber-950 text-xs">Direct UPI Node Link (Manual Verification Required):</h6>
+                          <p className="text-slate-600 leading-normal text-[11px]">
+                            Scan or copy transfer ID below:
+                          </p>
+                          <div className="bg-stone-50 border border-editorial-ink p-1.5 px-3 rounded-sm font-mono font-bold text-slate-800 shadow-sm inline-block select-all text-xs">
+                            {activeBooking.upi_id}
+                          </div>
+                        </div>
+                      </div>
+                    </details>
+                  )}
 
                   {/* Raw JSON block */}
                   <div className="bg-stone-900 p-4 rounded-sm text-left border border-editorial-ink font-mono">
@@ -1692,40 +2504,7 @@ export default function App() {
         </div>
       )}
 
-      {/* FLOATING QUICK CONTACT BAR (WHATSAPP + HELPLINE + DIRECT BOOKING) */}
-      <div id="floating-contact-panel" className="fixed bottom-6 right-6 z-40 flex flex-col md:flex-row items-stretch md:items-center gap-3">
-        {/* Direct Booking Modal Button */}
-        <button
-          onClick={() => setIsBookingModalOpen(true)}
-          className="bg-[#F2B705] hover:bg-[#dca204] text-[#1a1a1a] border-2 border-[#1a1a1a] px-4 py-2.5 rounded-full font-bold text-xs shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-none active:translate-y-0.5 transition flex items-center justify-center gap-1.5 cursor-pointer"
-          id="floating-book-btn"
-        >
-          <Calendar className="w-3.5 h-3.5 text-[#1a1a1a]" />
-          <span>Book Consultation Online</span>
-        </button>
 
-        {/* Call Helpline Button */}
-        <a
-          href="tel:+918806510889"
-          className="bg-white text-slate-800 hover:text-[#0B3C5D] border-2 border-editorial-ink px-4 py-2.5 rounded-full font-bold text-xs shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-none active:translate-y-0.5 transition flex items-center justify-center gap-1.5 cursor-pointer"
-          id="floating-helpline-btn"
-        >
-          <Phone className="w-3.5 h-3.5 text-[#0B3C5D] animate-pulse" />
-          <span className="font-mono">Call Helpline: +91 8806510889</span>
-        </a>
-
-        {/* WhatsApp Button */}
-        <a
-          href="https://wa.me/918806510889"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white border-2 border-editorial-ink px-4 py-2.5 rounded-full font-bold text-xs shadow-[4px_4px_0px_rgba(26,26,26,1)] hover:shadow-none active:translate-y-0.5 transition flex items-center justify-center gap-1.5 cursor-pointer"
-          id="floating-whatsapp-btn"
-        >
-          <MessageCircle className="w-3.5 h-3.5 text-white" />
-          <span>Chat on WhatsApp</span>
-        </a>
-      </div>
 
     </div>
   );

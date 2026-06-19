@@ -16,6 +16,8 @@ export interface BookingDetails {
   booking_id: string;
   status: "pending_payment" | "confirmed";
   client_name: string;
+  client_email?: string;
+  client_mobile?: string;
   astrologer_name: string;
   astrologer_specialization: string;
   consultation_type: string;

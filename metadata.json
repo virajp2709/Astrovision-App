@@ -1,6 +1,8 @@
 {
-  "name": "Astrovision",
-  "description": "NakshatraAI - Culturally Aware AI Astrology Assistant, Kundli Milan, Horoscopes & custom consultations.",
+  "name": "Pathak Aanna Astrology",
+  "description": "NakshatraAI is a culturally aware astrology assistant providing Kundli Milan, horoscopes, custom consultations, and automated astrology insights.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
