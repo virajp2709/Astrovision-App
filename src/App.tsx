@@ -82,15 +82,25 @@ export default function App() {
   
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [founderPhoto, setFounderPhoto] = useState<string>(() => {
-    try {
-      return localStorage.getItem("astro_founder_photo") || "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&q=80&w=400";
-    } catch (e) {
-      return "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&q=80&w=400";
-    }
-  });
+  
+  // Permanent premium photo of the founder loaded dynamically from backend or localized fallback
+  const [founderPhoto, setFounderPhoto] = useState<string>(
+    "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+  );
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
   const [photoUrlInput, setPhotoUrlInput] = useState("");
+
+  // Retrieve customized founder photo URL from the server on mount
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && data.settings && data.settings.founderPhoto) {
+          setFounderPhoto(data.settings.founderPhoto);
+        }
+      })
+      .catch((err) => console.log("Failed to load settings:", err));
+  }, []);
   
   // Kundli Generator States
   const [kundliInputs, setKundliInputs] = useState<KundliInputs>({
@@ -2045,11 +2055,18 @@ export default function App() {
                       <div className="flex gap-1">
                         <button
                           onClick={() => {
-                            if (photoUrlInput.trim()) {
-                              setFounderPhoto(photoUrlInput.trim());
+                            const trimmedUrl = photoUrlInput.trim();
+                            if (trimmedUrl) {
+                              setFounderPhoto(trimmedUrl);
                               try {
-                                localStorage.setItem("astro_founder_photo", photoUrlInput.trim());
+                                localStorage.setItem("astro_founder_photo", trimmedUrl);
                               } catch(e) {}
+                              // Sync to backend file storage globally
+                              fetch("/api/settings", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ founderPhoto: trimmedUrl })
+                              }).catch((err) => console.log("Failed to sync settings:", err));
                             }
                             setIsEditingPhoto(false);
                           }}

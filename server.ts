@@ -463,6 +463,34 @@ app.post("/api/verify-payment", async (req, res) => {
   }
 });
 
+// App settings configuration API (e.g., persistent founder photo)
+app.get("/api/settings", (req, res) => {
+  try {
+    const settings = db.settings || {
+      founderPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+    };
+    res.json({ success: true, settings });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post("/api/settings", (req, res) => {
+  try {
+    const { founderPhoto } = req.body;
+    if (!db.settings) {
+      db.settings = {};
+    }
+    if (founderPhoto) {
+      db.settings.founderPhoto = founderPhoto;
+    }
+    saveDb(db);
+    res.json({ success: true, settings: db.settings });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Start Express server and integrate with Vite build-cycle
 async function startServer() {
   // Vite dev server mounting or static production bundle rendering

@@ -10,6 +10,9 @@ interface BlogInsightsDb {
   dailyInsights: DailyInsight[];
   weeklyForecasts: WeeklyForecast[];
   blogArticles: BlogArticle[];
+  settings?: {
+    founderPhoto?: string;
+  };
 }
 
 // Ensure database file exists and is initialized
@@ -17,7 +20,14 @@ export function initDb(): BlogInsightsDb {
   try {
     if (fs.existsSync(DB_FILE_PATH)) {
       const data = fs.readFileSync(DB_FILE_PATH, "utf-8");
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (!parsed.settings) {
+        parsed.settings = {
+          founderPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+        };
+        fs.writeFileSync(DB_FILE_PATH, JSON.stringify(parsed, null, 2), "utf-8");
+      }
+      return parsed;
     }
   } catch (error) {
     console.error("Database read error. Re-initializing...", error);
@@ -28,6 +38,9 @@ export function initDb(): BlogInsightsDb {
     dailyInsights: [...preseededDailyInsights],
     weeklyForecasts: [...preseededWeeklyForecasts],
     blogArticles: [...preseededBlogArticles],
+    settings: {
+      founderPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400"
+    }
   };
   saveDb(db);
   return db;
